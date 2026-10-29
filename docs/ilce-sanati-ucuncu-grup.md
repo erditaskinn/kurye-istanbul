@@ -1,0 +1,25 @@
+# Şişli ve Beyoğlu — üretim yönergeleri
+
+Dahili image_gen aracıyla üretildi. Yapılar gerçek örneklerden esinlenir; yerleşimler stilize oyun kolajlarıdır.
+
+## sisli
+
+Use case: stylized-concept. Asset: finished portrait static district map for Turkish idle courier game, 1024x1536. Exceptionally beautiful densely detailed authentic PIXEL ART, crisp visible square pixel clusters, stepped edges, NO blur or smooth digital painting or photorealism. Premium cozy isometric city-builder illustration. Warm afternoon sun, cream stone, terracotta roofs, emerald trees, navy shadows, tiny colorful awnings. Elevated isometric aerial view, no sky/horizon, full bleed. Stylized collage of real Istanbul district landmarks, not a scale navigation map. CRUCIAL: major landmarks entirely within y=25%-65% and away from outer edges, with many small shops and ordinary homes surrounding them at top, bottom and sides for delivery pins later. Dense connected narrow streets, courtyards, tiny pedestrians, cafés, greenery. No text, signage letters, map markers, UI, borders, logo or watermark. No giant courier figures, no unrelated monuments. SISLI district Istanbul: an INLAND metropolitan neighborhood, NO sea, beach, ferries or waterfront. Three distinct focal buildings: center-left y=35%-47% the recognizable SISLI MOSQUE, pale stone single central gray lead dome with small corner domes, ONE tall slender minaret, arcaded courtyard beside busy Halaskargazi boulevard. Center-right y=45%-55% ATATURK MUSEUM HOUSE: modest narrow THREE-STOREY pink Ottoman townhouse, symmetrical tall white-trimmed windows, central projecting upper bay, red Turkish flag with white crescent/star; NOT a palace and no invented large statue on it. Lower-middle y=58%-67% historic BOMONTI factory courtyard with red-brown brick industrial buildings, pitched roofs and one modest chimney, converted café arts ambiance. Surround with elegant Nisantasi/Osmanbey apartment blocks, shops at street level, tree-lined boulevards, pocket gardens. Upper third contains Mecidiyekoy modern glass office towers and a modest elevated roadway, mixed with old apartments; these should establish Sisli's distinct modern urban identity without dominating the older landmarks. Tasteful dense inviting urban scene. No Galata Tower, no monumental clock tower, no red nostalgic tram.
+
+## beyoglu
+
+Use case: stylized-concept. Asset: finished portrait static district map for Turkish idle courier game, 1024x1536. Exceptionally beautiful densely detailed authentic PIXEL ART, crisp visible square pixel clusters, stepped edges, NO blur or smooth digital painting or photorealism. Premium cozy isometric city-builder illustration. Warm afternoon sun, cream stone, terracotta roofs, emerald trees, navy shadows, tiny colorful awnings. Elevated isometric aerial view, no sky/horizon, full bleed. Stylized collage of real Istanbul district landmarks, not a scale navigation map. CRUCIAL: major landmarks entirely within y=25%-65% and away from outer edges, with many small shops and ordinary homes surrounding them at top, bottom and sides for delivery pins later. Dense connected narrow streets, courtyards, tiny pedestrians, cafés, greenery. No text, signage letters, map markers, UI, borders, logo or watermark. No giant courier figures, no unrelated monuments. BEYOGLU district Istanbul: dense historic Pera/Galata hillside, primarily LAND, only a narrow slice of Golden Horn water at lower-left with Karakoy pier. Main landmark center-left y=30%-52% recognizable GALATA TOWER: round thick pale stone medieval cylinder, rhythmic arched windows, projecting circular observation gallery and dark steep conical roof, isolated in a small cobblestone square so its entire silhouette is clear. Center-right y=42%-58% elegant ISTIKLAL AVENUE lined with ornate 19th-century European apartment facades, cafés, bookshops, balconies, Turkish flags; ONE charming RED nostalgic tram on twin rails, overhead cable. Upper-right but within y=27%-40% TAKSIM SQUARE with a small recognizable REPUBLIC MONUMENT: pink stone double-sided arch containing bronze standing figures on a circular landscaped base, not a giant equestrian statue. A little green Gezi-like park adjacent. Lower-right y=60%-70% red-brick ST ANTHONY CHURCH with Gothic pointed arches and small rose window in a courtyard, surrounded by Pera streets. Distinct steep Galata/Karakoy steps and colorful neighborhood shops, ferries tiny only in lower-left. No Kiz Kulesi, no Haydarpasa station, no palace or huge mosque. Land should fill at least 90 percent.
+
+## Referanslar
+
+- https://sisli.bel.tr/ataturk-ve-sisli
+- https://www.sisli.bel.tr/kurumsal/i/sisli-tarihcesi
+- https://www.sisli.bel.tr/Content/images/document/175/komsum_gazetesi_sisli_kulturel_miras_ozel_sayi.pdf
+- https://muze.gov.tr/muze-detay?sectionId=GLT04&distId=MRK
+- https://beyoglu.bel.tr/ana-kategori/istiklal-caddesi-ataturkun-sesi-ile-yankilandi/
+
+## Projedeki varlıklar
+
+- assets/maps/sisli_sabit.png
+- assets/maps/beyoglu_sabit.png
+

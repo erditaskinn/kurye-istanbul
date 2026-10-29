@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/pixel_style.gd" id="1"]
+[sub_resource type="StyleBox" id="PanelStyle"]
+script = ExtResource("1")
+fill = Color(0.027, 0.106, 0.157, 1)
+outline = Color(0.83, 0.63, 0.35, 1)
+[node name="FramedPanel" type="Panel"]
+theme_override_styles/panel = SubResource("PanelStyle")

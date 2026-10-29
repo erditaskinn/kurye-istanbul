@@ -1,0 +1,56 @@
+Kod değiştirmedim. Godot’u çalıştıramadım, çünkü pakette sanat dosyaları yok. Aşağıdaki her şey kodu okuyarak ve bir ekonomi tahmin modeliyle çıkarıldı; hiçbirini oyunda denemedim.
+Pakette olmayanlar (CLAUDE-ONCE-OKU.md bunları anıyor):
+- assets/ klasörünün tamamı: haritalar, simgeler, font, UI teması ve assets/maps/sile.json. Yol ağı geometrisini ve Şile’deki sipariş sayısını bu yüzden ölçemedim.
+- CLAUDE-PROJE-INCELEME.md ve DOSYA-MANIFESTI.json.
+Tam okuduklarım:
+- economy.gd, dispatch.gd, save_store.gd, local_metrics.gd, road_network.gd, number_format.gd, company_ui.gd.
+- Sahne dosyaları, pixel_style.gd, header_style.gd, isometric_projection.gd, project.godot, export_presets.cfg.
+- sirket-modeli-v2.md, idle-arastirma-notlari.md, a9-uygulama-raporu.md.
+- 6 ekran görüntüsünden 5'i (company-map/fleet/upgrades/create/motivation/tall, hepsi bakıldı).
+Kısmen okuduklarım:
+- main.gd (2821 satırın yaklaşık %55'i). Okuduklarım ekonomi, kayıt, çevrim dışı, prestige, ilçe, dönüş özeti, rehber, menü ve çizim girişi. Okumadıklarım: harita girdisi/kamera (~997–1130), eski Şile izometrik çizim ve çevre kodu (~1896–2330) ve panel yerleşimleri.
+- oyun-tasarim-belgesi.md (bölüm 6–10), gelistirme-plani.md (son ~60 satır), a8-uygulama-raporu.md (baş kısmı).
+- tests/: company_model, balance_metrics ve README.
+Okumadıklarım:
+- legacy_dispatch.gd.
+- a2–a7 raporları, README-0.13-arsiv.md, ilçe sanatı ve art-brief belgeleri, gorsel-iyilestirme-v1.md.
+- tools/ betikleri (yalnızca anahtar/şifre araması yaptım) ve diğer testlerin gövdesi.
+- Çekirdek döngü: 60 ₺ ve ücretsiz bir yaya ile başlanır. Siparişler ilçenin talebine göre gelir (3→28/dk). Boştaki çalışanlara sırayla atanır, kuyruk en fazla 30'dur. Para teslimat bitince eklenir. Oyuncunun elle yaptığı bir iş yoktur.
+- Gerçek darboğaz: Gelir = min(kapasite, talep) × ortalama ücret. Talep sınırlıysa fazladan kurye gelir getirmez; arayüz bunu dürüstçe sıfır katkı gösteriyor.
+- Yatırımlar: 
+  - 4 kurye türü (yaya, bisiklet, motor, araba), her alım ×1,6 pahalanır.
+  - Hizmet (50 seviye, +%25 baz ücret), Teslimat Primi (20, +%5), Konfor (20, +%3 hız), Operasyon (20, +%5 hız).
+- İlçeler: 7 ilçe, ciroyla açılır (550 / 2K / 6,5K / 18K / 50K / 120K ₺) ve oyuncu elle seçer. Yeni ilçe daha yüksek talep ve ücret verir. Albüm 7 kartpostal.
+- Çevrim dışı: 4 saat tavanlı. Açık ve kapalı oyun aynı olay motorunu kullanıyor (dispatch.gd), dönüşte özet ve 3 yatırım önerisi çıkıyor.
+- Prestige “İstanbul İtibarı”: Beyoğlu’nda ve 220K tur cirosunda açılır. Her tur kalıcı +%25 verir (toplamsal, bileşik değil). Şirket adı, logo ve albüm korunur.
+- Kayıt: Şema 7. Geçici dosyaya yazıp doğrular, eski kaydı .bak yapar, yeni dosyayı yerine koyar. Ana dosya bozuksa yedeğe düşer. Yeni sürümden gelen kayıt yazmayı kapatır. Eski ekonomi sürümlerinden göç vardır.
+- Yerel ölçüm: Son 128 olayla sınırlı, ağ kullanmıyor.
+- Görsel taraf: Piksel HUD (Tiny5 font), 4 eşit bölmeli alt çubuk, harita sabit görsel üzerine 16 dokunulabilir konum.
+1. Haritada hiç kurye görünmüyor. _draw() (main.gd:1701) yalnızca sabit haritayı çiziyor. _draw_world() ve _draw_staff() hiçbir yerden çağrılmıyor. Yani yaklaşık 600 satırlık kurye ve izometrik çizim kodu ölü. İdle oyunun asıl “canlılık” hissi eksik: oyuncu ekranda yalnızca sayıların değiştiğini görüyor.
+2. Kayıp siparişler görünmüyor. Kuyruk dolunca gelen sipariş sessizce dispatch.missed sayacına gidiyor. Bu sayaç arayüzün hiçbir yerinde yok. Oyuncu “yeterli kapasite yok” bilgisini yalnızca yazıdan anlıyor, ne kadar kazanç kaçırdığını görmüyor.
+3. Satın almanın etkisi gecikmeli. Ücret ve hız profili sipariş oluşurken kilitleniyor (main.gd:1146, dispatch.gd:86). Kuyruktaki işler eski değerleriyle biter. Kuyruk doluyken Hizmet/Konfor alımının geliri artırması yaklaşık 30 / kapasite dakika sürer. Belgelerdeki “yeni kabul edilen iş” ifadesi kodla tam örtüşmüyor.
+4. Her teslimatta tam kayıt yazılıyor (main.gd:979–980), üstelik her yazma yeni dosyayı ve eskisini yeniden ayrıştırıyor (save_store.gd:47–50). Yüksek talepli ilçelerde birkaç saniyede bir diske yazılır. 30 sn zamanlayıcı ve duraklatma kaydı yetiyor, çünkü kayıt last_saved_at ile tutarlı.
+5. Prestige koşulu ilçeye bağlı (main.gd:1269: district_index == 6). Bazı filo düzeylerinde Beyoğlu, daha düşük bir ilçeden daha az kazandırıyor (tahminim aşağıda). Oyuncu prestige için gelirini düşürüp yeniden yükseltmek zorunda kalabilir.
+6. Ses ve dokunsal geri bildirim yok. Hiçbir AudioStreamPlayer kullanılmıyor. Satın alma, teslimat ve ilçe açılışı sessiz.
+7. Ölü ve eski kod. main.gd içinde kişisel kurye/5 teslimat dönemine ait arayüz elemanları hâlâ kuruluyor, sonra company_ui.sync() ile gizleniyor. Kod 143 KB’ta tek dosya. 20 testten yalnızca 5'i güncel model için geçerli (tests/README.md bunu açıkça yazıyor). Yani güncel kabul kapısı dar.
+8. Küçük UI tutarsızlığı: Geliştir kartında “+%25 baz ücret” sabit metin, hizmet çarpanı aslında doğrusal toplamsal (1+0,25×seviye). Seviye arttıkça marjinal kazanç düşer (7. seviyede ~%9, 20'de ~%4), maliyet ×1,55 büyür. Kartlar bu azalan verimi göstermiyor.
+- Denge onaylanmamış. Belgeler bunu açıkça söylüyor (“yeni katsayılar henüz dengelenmedi”). Eski A8 ölçümleri artık geçerli değil. Benim tahminim (aşağıda) ilk itibarın tasarım hedefinden çok daha erken geldiğini gösteriyor.
+- Erken oyunda üç yatırım tuzak gibi. Başlangıçta geri ödeme süreleri: ek yaya 7,5 dk, Hizmet 10 dk, Prim 60 dk, Konfor 83 dk, Operasyon 150 dk. Arayüz geri ödeme süresini göstermiyor, yalnızca fleet kartlarında “Katkı” var. Yeni oyuncu prim ve konforu alıp neden gelir artmadığını anlamayabilir.
+- Endgame yok. 7 ilçe, tek prestige, tek kalıcı sayı. Tur süresi hızla kısalıyor (tahmine göre 5. turda ~40 dk). Sonrasında yeni hedef yok.
+- Haritanın oyun etkisi yok. Süreler DISTRICT_DISTANCE ile normalize ediliyor, gerçek rota uzunluğu yalnızca ücret oranını etkiliyor. İlçe haritaları görsel; “ilçe farkı” aslında sayı farkı.
+- Çevrim dışı performansı ölçülmemiş. 4 saatlik dönüşte Beyoğlu’nda ~6.700 sipariş üretilir ve her biri A* + closest_location ile rota hesaplıyor. _market_profile() tüm çift mesafelerini zaten hesaplıyor ama _order_quote her siparişte yeniden hesaplıyor. Kodda önbellek eksik. A9 raporuna göre 4 saatlik gerçek bekleme telefonda test edilmedi, yalnızca 123 sn denendi.
+- Cihaz saati: Saati ileri alma ücretsiz 4 saat verir; saati geri alıp tekrar ileri almak last_saved_at’i gelecekte bırakıp kazancı durdurabilir. Tek oyunculu oyun için düşük öncelik.
+- Yayın hazırlığı yok. Hem ana hem test preset’i debug şablonu kullanıyor, Gradle kapalı (Play Store AAB istiyor), release imzası yok. APK ~57–60 MB.
+economy.gd formüllerini Python’da akışkan modele çevirdim. Kuyruk gecikmesi, yuvarlama ve iş kilitlemesi yok; tek tip bir “en iyi geri ödeme” stratejisi var. Gerçek Godot koşusuyla doğrulanmadı, büyüklük mertebesi olarak okuyun.
+Yeni model eskiye göre yaklaşık yarı sürede ilk itibara ulaştırıyor gibi görünüyor. İtibarla tur süresi de hızla düşüyor (sürekli açıkta 1. turda 89 dk, 5. turda 40 dk). Kesin sayıyı Godot’ta tools/measure_a8.gd’yi yeni modele uyarlayarak çıkarmak gerek.
+- Kayıt ve çevrim dışı tasarımı sağlam: atomik yazma, yedek, yeni sürüm koruması, açık/kapalı eşitliği testleri, çift ödeme yok.
+- Ekonomi, yerel ölçüm ve ilçe tasarımı kasıtlı olarak kayıp korkusu ve zorlayıcı mekanikten kaçınıyor (araştırma notlarına uygun).
+- Piksel HUD, Türkçe karakterler, 480×800 ve 480×1040 yerleşimi iyi görünüyor.
+- Dönüş ekranı “ne oldu / ne alabilirim” sorusunu yanıtlıyor.
+1. Haritaya hareket ver (en yüksek etki). Ölü kurye çizimini canlandır (iş bitişinde +₺ yazısı, hareket eden kurye simgeleri) ve ses/titreşim ekle. Bu, idle hissin asıl eksiği.
+2. Dengeyi yeni modelde ölç. measure_a8.gd’yi güncel ekonomiye uyarlayıp ilk itibar süresini, hangi yatırımların hiç alınmadığını (Araba, Konfor) ve prestige koşulunun kenar durumunu doğrula.
+3. Kaybı ve geri ödemeyi göster. Kayıp sipariş sayısını ve her kartta “~+₺/dk, geri ödeme X dk” bilgisini ekle. Prim/Konfor/Operasyon için “erken değil” ipucu ver.
+4. Kayıt ve performans düzeni. Teslimat başına kaydı kaldır, rota mesafesini önbelleğe al, 4 saatlik dönüşü gerçek telefonda ölç.
+5. Kodu sadeleştir. Ölü çizim ve eski kişisel kurye arayüzünü temizle, main.gd’yi böl, testleri yeni modele taşı ve eskileri arşivle.
+6. Uzun vade. Prestige sonrası yeni hedefler (ilçe uzmanlığı, kalıcı geliştirmeler), sonra isteğe bağlı bildirim/etkinlik. Yayın için release imzası ve AAB.
+Hangisini ayrıntılandırmamı istersiniz? İsterseniz 1. maddeyi kod değiştirmeden önce bir tasarım taslağına dökebilirim.

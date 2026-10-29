@@ -1,0 +1,52 @@
+[gd_resource type="Theme" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/pixel_style.gd" id="1"]
+
+[sub_resource type="StyleBox" id="normal"]
+script = ExtResource("1")
+fill = Color(0.06275, 0.17647, 0.24314, 1)
+outline = Color(0.33333, 0.45882, 0.5098, 1)
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBox" id="hover"]
+script = ExtResource("1")
+fill = Color(0.10196, 0.2549, 0.31765, 1)
+outline = Color(1.0, 0.81961, 0.51765, 1)
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBox" id="pressed"]
+script = ExtResource("1")
+fill = Color(0.08627, 0.20392, 0.25882, 1)
+outline = Color(0.8902, 0.64706, 0.30588, 1)
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBox" id="disabled"]
+script = ExtResource("1")
+fill = Color(0.08235, 0.16471, 0.21176, 1)
+outline = Color(0.20392, 0.29804, 0.34902, 1)
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxEmpty" id="focus"]
+
+[resource]
+default_font_size = 16
+Button/colors/font_color = Color(1, 0.94, 0.82, 1)
+Button/colors/font_disabled_color = Color(0.52, 0.59, 0.62, 1)
+Button/colors/font_hover_color = Color(1, 0.94, 0.82, 1)
+Button/styles/normal = SubResource("normal")
+Button/styles/hover = SubResource("hover")
+Button/styles/pressed = SubResource("pressed")
+Button/styles/disabled = SubResource("disabled")
+Button/styles/focus = SubResource("focus")

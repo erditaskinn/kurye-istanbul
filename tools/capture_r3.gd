@@ -1,0 +1,20 @@
+extends "res://tools/capture_company.gd"
+func capture() -> void:
+	root.size=Vector2i(480,800)
+	var game=load("res://scenes/Main.tscn").instantiate();root.add_child(game);game.set_process(false)
+	game._reset_progress();game.rng.seed=4242;game._create_company("Martı Kurye",0)
+	game.money=10000;game._refresh_ui()
+	game.company_ui.open_tab(0);await screen("r3-upgrades")
+	game.company_ui.open_tab(2);await screen("r3-fleet")
+	game.company_ui.sheet_scroll.scroll_vertical=904;await screen("r3-operations")
+	game._advance_simulation(3600);game._refresh_ui()
+	game.company_ui.open_tab(0);await screen("r3-full-queue")
+	game.service_level=7;game._refresh_ui();await screen("r3-service-7")
+	game.staff_counts.assign([4,0,0,0]);game.workers=4
+	game.company_ui.open_tab(1);await screen("r3-demand-cap")
+	game.service_level=50;game.bonus_level=20;game._refresh_ui()
+	game.company_ui.open_tab(0);await screen("r3-capped")
+	root.size=Vector2i(480,1040)
+	game.company_ui.open_tab(1);await screen("r3-tall")
+	print("R3 preview scenarios captured in isolated profile")
+	quit()

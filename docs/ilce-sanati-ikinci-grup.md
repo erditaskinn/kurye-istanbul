@@ -1,0 +1,23 @@
+# Kadıköy ve Beşiktaş üretim yönergeleri
+
+Dahili image_gen aracıyla üretildi. Gerçek yapıların siluetleri temel alındı; yerleşimler stilize oyun kolajlarıdır.
+
+## kadikoy
+
+Use case: stylized-concept. Asset: finished portrait static background for a Turkish idle courier game, 1024x1536. Exceptionally beautiful highly detailed authentic PIXEL ART, deliberate crisp square pixel clusters, stepped edges, no blur, no smooth digital painting, no 3D render. Warm late afternoon, jewel teal/navy water, cream stone, terracotta roofs, verdant trees, coherent premium city-builder art style matching Istanbul coastal pixel game maps. Elevated isometric aerial view, no sky or horizon, full bleed district environment. Stylized collage of real district landmarks, not a scale navigational map. IMPORTANT: keep ALL defining landmarks complete within middle band y=25%-65%, with breathing room around silhouettes. Top and bottom thirds should be full of charming small shops, apartments, courtyards, cafés, narrow connected streets, tiny awnings and trees, to host delivery markers later. Neighborhood must be richly filled and readable. No text, labels, logos, map pins, UI or watermark, no giant people, no giant courier. Do not include unrelated Istanbul monuments. KADIKOY on the ASIAN coast: Sea of Marmara on LEFT one-third, dense varied neighborhoods on RIGHT two-thirds. Recognizable HAYDARPASA TRAIN STATION at center-left shore y=35%-48%: monumental long U-shaped sandstone building, steep dark slate roofs and TWO matching cylindrical seafront corner turrets with pointed roofs, many rhythmic windows, railway tracks behind. It must look like Haydarpasa, not a mosque, castle or white palace. A traditional cream Ottoman Kadikoy ferry terminal and white/yellow city ferries nearby. At center-right inland y=45%-55%, a small lively square with bronze charging BULL STATUE on low pedestal, hint of red nostalgic tram in nearby shopping lane. Further south y=60%-67%, MODA PIER a modest low cream historic pavilion at end of short straight pier. Green Moda seafront promenade and Yeldegirmeni-like ornate apartment streets. Land must dominate image for deliveries, sea should not exceed a third. Unique Kadikoy identity, vibrant cafés and ferry culture.
+
+## besiktas
+
+Use case: stylized-concept. Asset: finished portrait static background for a Turkish idle courier game, 1024x1536. Exceptionally beautiful highly detailed authentic PIXEL ART, deliberate crisp square pixel clusters, stepped edges, no blur, no smooth digital painting, no 3D render. Warm late afternoon, jewel teal/navy water, cream stone, terracotta roofs, verdant trees, coherent premium city-builder art style matching Istanbul coastal pixel game maps. Elevated isometric aerial view, no sky or horizon, full bleed district environment. Stylized collage of real district landmarks, not a scale navigational map. IMPORTANT: keep ALL defining landmarks complete within middle band y=25%-65%, with breathing room around silhouettes. Top and bottom thirds should be full of charming small shops, apartments, courtyards, cafés, narrow connected streets, tiny awnings and trees, to host delivery markers later. Neighborhood must be richly filled and readable. No text, labels, logos, map pins, UI or watermark, no giant people, no giant courier. Do not include unrelated Istanbul monuments. BESIKTAS on EUROPEAN shore: densely built land on LEFT two-thirds, BOSPHORUS on RIGHT third. Recognizable DOLMABAHCE PALACE around central waterfront y=35%-48%: long low ornate white neo-baroque facade, broad symmetric central hall, continuous waterfront balustrade, elegant seafront gates, elaborate gardens inland, no fantasy domes or turreted castle. Separate slim four-sided ornate DOLMABAHCE CLOCK TOWER on nearby square, y=32%-42%. Further up the coast inside y=52%-65%, recognizable ORTAKOY MOSQUE: compact pale pink-white neo-baroque waterfront mosque, single large lead-gray dome, TWO very slender minarets, tall arched windows, waterside forecourt; distinct from palace. Small suspension bridge in upper-right background. Central neighborhood square with small bronze BARBAROS monument sailors, ferry terminal, café streets and market awnings; repeated elegant Akaretler terrace rows inland. Keep palace and mosque clearly separate. No Kiz Kulesi, no Galata Tower, no Haydarpasa. Architecture should strongly evoke actual Besiktas.
+
+## Referanslar
+
+- https://www.millisaraylar.gov.tr/Lokasyon/3/Dolmabahce-Sarayi
+- https://www.kulturportali.gov.tr/medya/fotograf/fotodokuman/312
+- https://sehirhatlari.istanbul/tr/haberler/unutulan-moda-iskelesi-yeniden-hayat-buldu-997
+
+## Projedeki varlıklar
+
+- assets/maps/kadikoy_sabit.png
+- assets/maps/besiktas_sabit.png
+

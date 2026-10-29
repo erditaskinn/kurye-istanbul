@@ -1,0 +1,18 @@
+@tool
+extends StyleBox
+# Nine-slice the approved frame; its sample text never enters the rendered patches.
+const ART = preload("res://assets/ui/header/top-hud-v1.png")
+func _get_minimum_size() -> Vector2:
+	return Vector2(24, 24)
+func _draw(item: RID, area: Rect2) -> void:
+	RenderingServer.canvas_item_add_rect(item, area.grow(-5), Color("071d2c"))
+	var sx := [40.0, 96.0, 630.0, 674.0]
+	var sy := [288.0, 340.0, 514.0, 542.0]
+	var dx := [area.position.x, area.position.x + 10, area.end.x - 10, area.end.x]
+	var dy := [area.position.y, area.position.y + 10, area.end.y - 10, area.end.y]
+	for row in 3:
+		for col in 3:
+			if row == 1 and col == 1: continue
+			var target := Rect2(dx[col], dy[row], dx[col+1]-dx[col], dy[row+1]-dy[row])
+			var source := Rect2(sx[col], sy[row], sx[col+1]-sx[col], sy[row+1]-sy[row])
+			RenderingServer.canvas_item_add_texture_rect_region(item, target, ART.get_rid(), source)

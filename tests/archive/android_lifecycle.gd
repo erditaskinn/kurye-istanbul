@@ -1,0 +1,52 @@
+extends SceneTree
+var failures: Array[String] = []
+func _initialize() -> void:
+	call_deferred("check")
+func expect(ok: bool, reason: String) -> void:
+	if not ok:
+		failures.append(reason)
+		push_error(reason)
+func check() -> void:
+	var game = load("res://scenes/Main.tscn").instantiate()
+	root.add_child(game)
+	game.set_process(false)
+	game._reset_progress()
+	game._start_playing()
+	game._notification(game.NOTIFICATION_APPLICATION_PAUSED)
+	var state: Dictionary = game.dispatch.to_save().duplicate(true)
+	var money: int = game.money
+	game._process(600)
+	expect(game.application_suspended and game.dispatch.to_save() == state and game.money == money, "Suspended process must not generate income before offline settlement")
+	game.last_saved_at = int(Time.get_unix_time_from_system()) - 120
+	game._notification(game.NOTIFICATION_APPLICATION_RESUMED)
+	expect(not game.application_suspended and game.money > money and game.return_overlay.visible, "Resume must settle offline time and show actual summary")
+	money = game.money
+	game._notification(game.NOTIFICATION_APPLICATION_RESUMED)
+	expect(game.money == money, "Duplicate resume must not pay twice")
+	game._handle_android_back()
+	expect(not game.return_overlay.visible, "Back must dismiss summary rather than exit")
+	game._toggle_guide()
+	game._handle_android_back()
+	expect(not game.guide_panel.visible and not game.menu_overlay.visible, "Back must dismiss guide while gameplay remains")
+	game._toggle_district_panel()
+	game._toggle_album()
+	game._handle_android_back()
+	expect(not game.album_panel.visible and game.district_panel.visible, "Back must first leave album")
+	game._handle_android_back()
+	expect(not game.district_panel.visible, "Next back must close district panel")
+	game._open_settings()
+	game._request_reset()
+	game._handle_android_back()
+	expect(not game.reset_dialog.visible and game.money == money, "Back must cancel destructive reset")
+	game._handle_android_back()
+	expect(not game.settings_overlay.visible, "Back must close settings")
+	game._confirm_rebirth()
+	game._handle_android_back()
+	expect(not game.rebirth_dialog.visible and not game.prestige_shade.visible and game.rebirth_count == 0, "Back must cancel prestige preview")
+	game._handle_android_back()
+	expect(game.menu_overlay.visible, "Back from gameplay must return to menu with saved progress")
+	game._start_playing()
+	expect(game.money == money, "Immediate menu/resume must not duplicate income")
+	game.free()
+	if failures.is_empty(): print("Android lifecycle passed: suspend guard, resume once, overlay back order, cancel resets and saved menu return")
+	quit(0 if failures.is_empty() else 1)
