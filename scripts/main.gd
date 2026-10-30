@@ -1,5 +1,8 @@
 extends Control
 const Specialization = preload("res://scripts/specialization.gd")
+var motivation_stars := 0
+var motivation_level := 0
+var star_progress := 0
 var specialization_id := "standard"
 var model_menu: PopupMenu
 var specialization_choice: OptionButton
@@ -605,6 +608,9 @@ func _reset_progress() -> void:
 	unlocked_district_index = 0
 	district_selection = 0
 	_build_roads()
+	motivation_stars = 0
+	motivation_level = 0
+	star_progress = 0
 	specialization_id = "standard"
 	rebirth_count = 0
 	deliveries = 0
@@ -1035,6 +1041,10 @@ func _advance_simulation(delta: float) -> Dictionary:
 func _on_order_finished(job: Dictionary) -> void:
 	var founder := int(job["role"]) == Dispatch.FOUNDER
 	var paid := int(job.get("founder_paid" if founder else "paid", job["payout"]))
+	star_progress += 1
+	if star_progress >= 100:
+		motivation_stars += star_progress / 100
+		star_progress %= 100
 	money += paid
 	total_earned += paid
 	run_earned += paid
@@ -1056,7 +1066,7 @@ func _advance_dispatch(delta: float, persist: bool = true) -> int:
 	return int(report["solo"]) + int(report["team"])
 
 func _income_multiplier() -> float:
-	return (1.0 + district_index * 0.25) * Economy.reputation_multiplier(rebirth_count, simulation_economy_version) * (1.0 + bonus_level * 0.05 if simulation_economy_version >= 6 else 1.0)
+	return (1.0 + district_index * 0.25) * _motivation_multiplier() * Economy.reputation_multiplier(rebirth_count, simulation_economy_version) * (1.0 + bonus_level * 0.05 if simulation_economy_version >= 6 else 1.0)
 
 func _credit(base_amount: int) -> int:
 	var paid := int(round(base_amount * _income_multiplier()))
@@ -1141,13 +1151,13 @@ func _confirm_rebirth() -> void:
 func _refresh_prestige_preview() -> void:
 	var candidate := _prepare_rebirth_record()
 	var job: Dictionary = candidate["dispatch"]["active"][0]
-	var before := int(round(int(job["payout"]) * Economy.reputation_multiplier(rebirth_count)))
+	var before := int(round(int(job["payout"]) * Economy.reputation_multiplier(rebirth_count) * _motivation_multiplier()))
 	var after := int(job["paid"])
 	var requirement := "HAZIR • +1 itibar kazanabilirsin"
 	if not _rebirth_ready():
 		requirement = "Beyoğlu açık + %s ₺ tur cirosu gerekli.\nTur: %s ₺ • Kalan: %s ₺" % [Numbers.compact(run_prestige_target), Numbers.compact(run_earned), Numbers.compact(maxi(0, run_prestige_target - run_earned))]
 	if not save_store.writable: requirement = "Kayıt yazılamıyor; yeni tur başlatılamaz."
-	rebirth_dialog.dialog_text = "İSTANBUL İTİBARI  %d → %d\nKALICI KAZANÇ  +%d%% → +%d%%\n\nAynı Şile işi: %s → %s ₺\nYaya, hizmet 0; her tur +25 yüzde puan.\n\nYENİDEN KURULUR\nKasa, filo ve tur içi yükseltmeler.\nBekleyen işler yeni tura taşınmaz.\n\nKORUNUR\nŞirket adı/logosu, itibar ve rehber.\nToplam ciro: %s ₺ • Albüm: %d/7\n\nYeni tur: Şile • 1 yaya • 60 ₺\nBaşlangıç sermayesi ciro sayılmaz.\n\n%s" % [rebirth_count, rebirth_count + 1, rebirth_count * 25, (rebirth_count + 1) * 25, Numbers.compact(before), Numbers.compact(after), Numbers.compact(total_earned), album_unlocked.size(), requirement]
+	rebirth_dialog.dialog_text = "İSTANBUL İTİBARI  %d → %d\nKALICI KAZANÇ  +%d%% → +%d%%\n\nAynı Şile işi: %s → %s ₺\nYaya, hizmet 0; her tur +25 yüzde puan.\n\nYENİDEN KURULUR\nKasa, filo ve tur içi yükseltmeler.\nBekleyen işler yeni tura taşınmaz.\n\nKORUNUR\nŞirket adı/logosu, itibar ve rehber.\nMotivasyon seviyesi ve yıldızlar.\nYeni tur ödülü: +10 yıldız.\nToplam ciro: %s ₺ • Albüm: %d/7\n\nYeni tur: Şile • 1 yaya • 60 ₺\nBaşlangıç sermayesi ciro sayılmaz.\n\n%s" % [rebirth_count, rebirth_count + 1, rebirth_count * 25, (rebirth_count + 1) * 25, Numbers.compact(before), Numbers.compact(after), Numbers.compact(total_earned), album_unlocked.size(), requirement]
 	rebirth_dialog.dialog_text += "\n\nYeni tur modeli: " + Specialization.TITLES[specialization_choice.selected] + "\n" + Specialization.DETAILS[specialization_choice.selected] + "\nSonraki itibarda ücretsiz değiştirilebilir." 
 	rebirth_dialog.get_ok_button().disabled = not _rebirth_ready() or not save_store.writable
 
@@ -1162,9 +1172,10 @@ func _prepare_rebirth_record() -> Dictionary:
 	var distance := _network_distance(network, start, finish)
 	var normalized := distance / float(_market_profile(0)["mean_distance"]) * Economy.DISTRICT_DISTANCE[0]
 	var base := int(round(12.0 + 8.0 * distance / float(_market_profile(0)["mean_distance"])))
-	var paid := int(round(base * Economy.reputation_multiplier(rebirth_count + 1)))
+	var paid := int(round(base * Economy.reputation_multiplier(rebirth_count + 1) * _motivation_multiplier()))
 	var chosen: String = Specialization.IDS[specialization_choice.selected]
 	data["specialization_id"] = chosen
+	data["motivation_stars"] = motivation_stars + 10
 	var starter_speeds: Array = Specialization.apply(Economy.company_speeds(0, 0, 0), chosen)
 	var duration := normalized / float(starter_speeds[0])
 	var new_dispatch := Dispatch.new()
@@ -1195,6 +1206,7 @@ func _rebirth() -> void:
 	album_panel.hide()
 	rebirth_dialog.hide()
 	_close_location_card()
+	motivation_stars = int(candidate["motivation_stars"])
 	specialization_id = str(candidate["specialization_id"])
 	rebirth_count += 1
 	run_earned = 0
@@ -1238,7 +1250,7 @@ func _rebirth() -> void:
 
 func _buy_vehicle() -> void:
 	if simulation_economy_version >= 6:
-		company_ui.open_tab(2)
+		company_ui.open_tab(4)
 		return
 	if vehicle >= 3:
 		return
@@ -1274,7 +1286,7 @@ func _maybe_unlock_team() -> void:
 		message_clock = 5.0
 
 func _toggle_company_panel() -> void:
-	if company_ui != null: company_ui.open_tab(2)
+	if company_ui != null: company_ui.open_tab(4)
 
 func _staff_cost(role: int) -> int:
 	return Economy.hire_cost(role, maxi(0, staff_counts[role] - (1 if simulation_economy_version >= 6 and role == starter_role else 0)), simulation_economy_version)
@@ -1317,7 +1329,7 @@ func _refresh_ui() -> void:
 	if company_ui != null: company_ui.sync()
 
 func _save_data() -> Dictionary:
-	return {"specialization_id": specialization_id, "feedback_settings": {"sound": sound_enabled, "haptics": haptics_enabled}, "economy_version": Economy.VERSION, "run_prestige_target": run_prestige_target, "legacy_speed_floor": legacy_speed_floor, "company_name": company_name, "company_logo": company_logo, "brand_ready": brand_ready, "bonus_level": bonus_level, "operations_level": operations_level, "comfort_level": comfort_level, "starter_role": starter_role, "local_metrics": local_metrics.to_save(), "guide_seen": guide_seen, "service_level": service_level, "migration_notice": migration_notice, "rng_state": str(rng.state), "return_summary": return_summary, "started": has_started, "money": money, "total_earned": total_earned, "run_earned": run_earned, "district_index": district_index, "unlocked_district_index": unlocked_district_index, "album_unlocked": album_unlocked, "rebirth_count": rebirth_count, "deliveries": deliveries, "vehicle": vehicle, "company": company, "workers": workers, "staff_counts": staff_counts, "dispatch": dispatch.to_save(), "pickup_index": pickup_index, "drop_index": drop_index, "order_payout": order_payout, "carrying": carrying, "camera_center": [camera_center.x, camera_center.y], "camera_zoom": camera_zoom, "camera_follow": camera_follow, "last_saved_at": last_saved_at}
+	return {"motivation_stars": motivation_stars, "motivation_level": motivation_level, "star_progress": star_progress, "specialization_id": specialization_id, "feedback_settings": {"sound": sound_enabled, "haptics": haptics_enabled}, "economy_version": Economy.VERSION, "run_prestige_target": run_prestige_target, "legacy_speed_floor": legacy_speed_floor, "company_name": company_name, "company_logo": company_logo, "brand_ready": brand_ready, "bonus_level": bonus_level, "operations_level": operations_level, "comfort_level": comfort_level, "starter_role": starter_role, "local_metrics": local_metrics.to_save(), "guide_seen": guide_seen, "service_level": service_level, "migration_notice": migration_notice, "rng_state": str(rng.state), "return_summary": return_summary, "started": has_started, "money": money, "total_earned": total_earned, "run_earned": run_earned, "district_index": district_index, "unlocked_district_index": unlocked_district_index, "album_unlocked": album_unlocked, "rebirth_count": rebirth_count, "deliveries": deliveries, "vehicle": vehicle, "company": company, "workers": workers, "staff_counts": staff_counts, "dispatch": dispatch.to_save(), "pickup_index": pickup_index, "drop_index": drop_index, "order_payout": order_payout, "carrying": carrying, "camera_center": [camera_center.x, camera_center.y], "camera_zoom": camera_zoom, "camera_follow": camera_follow, "last_saved_at": last_saved_at}
 
 func _save_game() -> void:
 	last_saved_at = maxi(last_saved_at, int(Time.get_unix_time_from_system()))
@@ -1329,6 +1341,9 @@ func _load_game() -> void:
 	var data := save_store.load_record(SAVE_PATH)
 	if data.is_empty():
 		return
+	motivation_stars = clampi(int(data.get("motivation_stars", 0)), 0, 1000000000)
+	motivation_level = clampi(int(data.get("motivation_level", 0)), 0, 20)
+	star_progress = clampi(int(data.get("star_progress", 0)), 0, 99)
 	var saved_feedback = data.get("feedback_settings", {})
 	if saved_feedback is Dictionary:
 		sound_enabled = bool(saved_feedback.get("sound", false))
@@ -1648,7 +1663,7 @@ func _production_snapshot(next_vehicle: int = -1, next_service: int = -1, extra_
 	var fares: Array = _market_profile(region)["base_fares"]
 	var mean_pay := 0.0
 	for base in fares:
-		mean_pay += int(round(float(base) * Economy.service_multiplier(chosen_service) * (1.0 + region * 0.25) * Economy.reputation_multiplier(rebirth_count, simulation_economy_version) * (1.0 + chosen_bonus * 0.05 if simulation_economy_version >= 6 else 1.0)))
+		mean_pay += int(round(float(base) * Economy.service_multiplier(chosen_service) * (1.0 + region * 0.25) * _motivation_multiplier() * Economy.reputation_multiplier(rebirth_count, simulation_economy_version) * (1.0 + chosen_bonus * 0.05 if simulation_economy_version >= 6 else 1.0)))
 	mean_pay /= maxf(1.0, fares.size())
 	var demand := float(Economy.DEMAND_PER_MINUTE[region])
 	var bottleneck := "Taşıma sınırlı" if capacity < demand - 0.001 else "Talep sınırlı"
@@ -1914,6 +1929,25 @@ func _handle_android_back() -> void:
 func _focus_job() -> Dictionary:
 	if simulation_economy_version < 6: return dispatch.founder_job()
 	return dispatch.active[0] if not dispatch.active.is_empty() else {}
+
+func _motivation_multiplier() -> float:
+	return 1.0 + motivation_level * 0.20
+
+func _motivation_cost() -> int:
+	return int(ceil(5.0 * pow(1.45, motivation_level)))
+
+func _buy_motivation() -> void:
+	if motivation_level >= 20 or motivation_stars < _motivation_cost() or not save_store.writable: return
+	var candidate := _save_data().duplicate(true)
+	candidate["motivation_stars"] = motivation_stars - _motivation_cost()
+	candidate["motivation_level"] = motivation_level + 1
+	if not save_store.write_record(SAVE_PATH, candidate):
+		_announce("Motivasyon kaydedilemedi; yıldızların korundu")
+		return
+	motivation_stars = int(candidate["motivation_stars"])
+	motivation_level += 1
+	_refresh_ui()
+	if is_instance_valid(feedback): feedback.milestone("Kalıcı motivasyon +%d%%" % (motivation_level * 20))
 
 func _company_speeds() -> Array:
 	return Specialization.apply(Economy.company_speeds(district_index, comfort_level, operations_level, simulation_economy_version, legacy_speed_floor), specialization_id)

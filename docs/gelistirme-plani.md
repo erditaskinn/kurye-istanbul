@@ -1,5 +1,11 @@
 # İstanbul Kurye — Geliştirme yol haritası
 
+## En son kontrol noktası — 0.25.0-motivation telefon güncellemesi
+30 Ekim: Kullanıcının talebiyle Filo/Motivasyon kaynağından code25 APK aynı test paketine ve imzayla üretildi, imza/hizalama doğrulandı. SM-A505F RZ8M83P43BT üzerinde install -r başarılı; versionCode25/versionName0.25.0-motivation doğrulandı. Kurulum öncesi build/device-backup/before-motivation-* kaydı yedeklendi; kurulum sonrası SHA256 aynı, veri silinmedi. Oyun başlatılıp oynanış/şema göçü bu tur test edilmedi. GitHub'a bu değişiklikler gönderilmedi. Kullanıcı kontrolü için DUR; motivasyon+R7.3 denge/özel uzmanlık görseli/cihaz performansı bekliyor. Aşağıdaki APK-henüz-yok notları tarihsel durumu gösterir.
+
+## En son kontrol noktası — Filo / Motivasyon Yıldızı
+30 Ekim: Kullanıcı yeni beşli altbar ve farklı birimle güçlü kalıcı motivasyon istedi; “Motivasyon Yıldızı” ve kalıcı yüzde teslimat bonusunu seçti. Kaynak uygulandı,11 betik geçti; docs/filo-motivasyon-yildizi.md yetkili güncel ek sözleşmedir. Şema10/ekonomi7. Telefon0.24.0-r7.2; bu yeni kapsam APK/GitHub'a henüz aktarılmadı. Yeni ikon ve iki oranlı yakalamalar hazır. İnsan/çoklu tur motivasyon dengesi henüz doğrulanmadı. Kontrol için DUR; sonraki adım kullanıcı değerlendirmesi, motivasyon+R7.3 denge ve APK. Aşağıdaki notlar kronolojiktir.
+
 ## En son kontrol noktası — 30 Ekim 2026 / R7.2
 Uzmanlık modülü, itibar MODEL SEÇ akışı, atomik kayıt ve eski kayıt varsayılanı uygulandı. Kayıt şema9/ekonomi7. 10 kabul betiği geçti; iki ekran oranı yakalandı. docs/r7-2-uygulama.md ayrıntılar ve sınırlamalar. APK yenilenmedi, telefon kaydı değişmedi. Kullanıcı kontrolü için DUR. Sırada R7.3 çoklu tur denge, özel görsel onay ve test APK/cihaz kontrolü. Aşağıdaki R7.1 ve önceki notlar tarihsel kayıttır.
 

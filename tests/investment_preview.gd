@@ -31,7 +31,7 @@ func run() -> void:
 	for kind in ["worker","comfort","operations"]:
 		var offer: Dictionary=g._investment(kind,0)
 		check(float(offer["gain"])==0 and float(offer["payback"])<0,"Demand-capped upgrade must not promise income or finite payback")
-	g.company_ui.open_tab(1)
+	g.company_ui.open_tab(0)
 	check("Talep karşılanıyor" in g.company_ui.cards["comfort"]["payback"].text,"Zero contribution needs visible reason")
 	g._reset_progress();g._create_company("R3 Deneme",0);g._advance_simulation(3600)
 	check(g.dispatch.pending.size()==30 and g.dispatch.missed>0,"Queue test did not saturate")
@@ -46,7 +46,7 @@ func run() -> void:
 		check(g.company_ui.cards[key]["buy"].disabled and "tamamlandı" in g.company_ui.cards[key]["payback"].text.to_lower(),"Capped upgrade must not promise another purchase")
 	for height in [800,1040]:
 		root.size=Vector2i(480,height);await process_frame
-		for tab in 3:
+		for tab in [4,0,2]:
 			g.company_ui.open_tab(tab);await process_frame
 			for card in g.company_ui.cards.values():
 				var panel: Control=card["buy"].get_parent()

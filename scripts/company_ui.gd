@@ -2,7 +2,11 @@ extends Control
 const LOGOS = [preload("res://assets/ui/company/logo_0.svg"), preload("res://assets/ui/company/logo_1.svg"), preload("res://assets/ui/company/logo_2.svg"), preload("res://assets/ui/company/logo_3.svg"), preload("res://assets/ui/company/logo_4.svg"), preload("res://assets/ui/company/logo_5.svg"), preload("res://assets/ui/company/logo_6.svg"), preload("res://assets/ui/company/logo_7.svg"), preload("res://assets/ui/company/logo_8.svg")]
 const LOGO_NAMES := ["Kanat", "Pusula", "Şimşek", "Rota", "Kupa", "Taç", "Paket", "Yıldız", "Filo"]
 const NAV_ART = preload("res://assets/ui/navigation/nav-icons-v1.png")
-const NAV_NAMES := ["Geliştir", "Motivasyon", "Şirket", "Ayarlar"]
+const NAV_NAMES := ["Filo", "Geliştir", "Ekip Motivasyonu", "Şirket", "Ayarlar"]
+const NAV_TABS := [4, 0, 1, 2, 3]
+const FLEET_ART = preload("res://assets/ui/navigation/fleet-v1.png")
+var motivation_body: Label
+var motivation_buy: Button
 var nav_normal: Array[AtlasTexture] = []
 var nav_pressed: Array[AtlasTexture] = []
 var nav_markers: Array[ColorRect] = []
@@ -36,12 +40,12 @@ func _ready() -> void:
 	emblem.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	emblem.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(emblem)
-	for i in 4:
-		var b: Button = game._button(Vector2.ZERO, Vector2(120, 56), open_tab.bind(i), self)
+	for i in 5:
+		var b: Button = game._button(Vector2.ZERO, Vector2(120, 56), open_tab.bind(NAV_TABS[i]), self)
 		for row in 2:
 			var tile := AtlasTexture.new()
-			tile.atlas = NAV_ART
-			tile.region = Rect2([68, 494, 918, 1342][i], 56 if row == 0 else 464, 368, 368)
+			tile.atlas = FLEET_ART if i == 0 else NAV_ART
+			tile.region = Rect2(280, 95, 880, 880) if i == 0 else Rect2([68, 494, 918, 1342][i - 1], 56 if row == 0 else 464, 368, 368)
 			if row == 0: nav_normal.append(tile)
 			else: nav_pressed.append(tile)
 		b.text = ""
@@ -91,8 +95,8 @@ func layout() -> void:
 	var bottom: float = game._bottom_top()
 	income.position = Vector2(62, bottom + 10)
 	activity.position = Vector2(62, bottom + 43)
-	var cell_width: float = game.size.x / 4.0
-	for i in 4:
+	var cell_width: float = game.size.x / 5.0
+	for i in 5:
 		nav[i].position = Vector2(i * cell_width, game.size.y - 56)
 		nav[i].size = Vector2(cell_width, 56)
 		nav_markers[i].position = Vector2(12, 52)
@@ -124,7 +128,7 @@ func _nav_down(index: int) -> void:
 
 func _refresh_nav() -> void:
 	for i in nav.size():
-		var active := i == sheet_tab
+		var active: bool = NAV_TABS[i] == sheet_tab
 		nav[i].icon = nav_pressed[i] if active else nav_normal[i]
 		nav[i].add_theme_stylebox_override("normal", _nav_style(i, active))
 		nav_markers[i].visible = active
@@ -151,28 +155,34 @@ func open_tab(index: int) -> void:
 		content.remove_child(child)
 		child.queue_free()
 	cards.clear()
-	sheet_title.text = ["GELİŞTİR", "EKİP MOTİVASYONU", "ŞİRKET VE FİLO"][index]
+	sheet_title.text = ["GELİŞTİR", "EKİP MOTİVASYONU", "ŞİRKET", "AYARLAR", "FİLO"][index]
 	flow_note = game._label(Vector2(8, 0), Vector2(392, 58), 12, Color("b1c9c9"), content)
 	flow_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if index == 0:
 		_card("service", 66, "Hizmet Kalitesi", "", game._buy_service)
 		_card("bonus", 254, "Teslimat Primi", "", game._buy_company_upgrade.bind("bonus"))
-		_note(444, "Katkı ve geri ödeme aynı ilçe/talep için yaklaşık değerlerdir. Kuyruktaki eski işler nedeniyle başlangıçta bu katkıya ulaşılmayabilir; geri ödeme süresi bu beklemeyi içermez.")
-		content.custom_minimum_size.y = 550
+		_card("comfort", 442, "Çalışma Konforu", "", game._buy_company_upgrade.bind("comfort"))
+		_note(630, "Katkı ve geri ödeme aynı ilçe/talep için yaklaşık değerlerdir. Kuyruktaki eski işler nedeniyle başlangıçta bu katkıya ulaşılmayabilir; geri ödeme süresi bu beklemeyi içermez.")
+		content.custom_minimum_size.y = 760
 	elif index == 1:
-		_card("comfort", 66, "Çalışma Konforu", "", game._buy_company_upgrade.bind("comfort"))
-		_note(256, "Konfor yaya/bisikleti, operasyon motor/araba ekibini daha fazla destekler. Yeni kabul edilen işler hızlanır. Talep zaten karşılanıyorsa hız artışı sürekli geliri artırmayabilir. Etki oyun kapalıyken de sürer.")
-		content.custom_minimum_size.y = 374
+		motivation_body = game._label(Vector2(8, 70), Vector2(390, 160), 17, Color("ffcf71"), content)
+		motivation_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		motivation_buy = game._button(Vector2(8, 238), Vector2(390, 48), game._buy_motivation, content)
+		_note(302, "Her 100 tamamlanan teslimat: 1 yıldız. Her İstanbul İtibarı: 10 yıldız. Yıldızlar ve motivasyon seviyeleri yeni turlarda korunur. Bonus yeni kabul edilen işlere uygulanır; eski işler ücretini korur. Reklam veya gerçek para işlemi henüz bağlı değil.")
+		content.custom_minimum_size.y = 490
+	elif index == 4:
+		for i in 4: _card("fleet" + str(i), 66 + i * 188, game.STAFF_NAMES[i], "", game._hire_worker.bind(i), i)
+		_note(826, "Tüm filo türleri başlangıçtan açıktır. Talep zaten karşılanıyorsa yeni çalışan sürekli geliri artırmayabilir.")
+		content.custom_minimum_size.y = 990
 	else:
 		var brand: Label = game._label(Vector2(6, 64), Vector2(390, 26), 18, Color("ffcf71"), content)
 		brand.text = game.company_name
 		brand.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		game._button(Vector2(6, 96), Vector2(390, 44), open_creation, content).text = "ŞİRKET ADI VE LOGOSU"
-		for i in 4: _card("fleet" + str(i), 152 + i * 188, game.STAFF_NAMES[i], "", game._hire_worker.bind(i), i)
-		_card("operations", 904, "Operasyon Merkezi", "", game._buy_company_upgrade.bind("operations"))
-		game._button(Vector2(6, 1092), Vector2(390, 44), _districts, content).text = "İLÇELER VE İSTANBUL ALBÜMÜ ›"
-		_note(1148, ("Uzmanlık: " + game.Specialization.TITLES[game.Specialization.IDS.find(game.specialization_id)] + ". Sonraki itibarda ücretsiz seçim. " if game.rebirth_count > 0 else "Uzmanlık ilk İstanbul İtibarı ile açılır. ") + "Tahminler yeni işler/kuyruk oturduğunda geçerlidir. Geri ödeme, eski işlerin oluşturduğu başlangıç gecikmesini içermez. Karşılanamayan talep kasadan kesilen para değildir.")
-		content.custom_minimum_size.y = 1320
+		_card("operations", 152, "Operasyon Merkezi", "", game._buy_company_upgrade.bind("operations"))
+		game._button(Vector2(6, 340), Vector2(390, 44), _districts, content).text = "İLÇELER VE İSTANBUL ALBÜMÜ ›"
+		_note(402, ("Uzmanlık: " + game.Specialization.TITLES[game.Specialization.IDS.find(game.specialization_id)] + ". Sonraki itibarda ücretsiz seçim. " if game.rebirth_count > 0 else "Uzmanlık ilk İstanbul İtibarı ile açılır. ") + "Tahminler yeni işler/kuyruk oturduğunda geçerlidir. Geri ödeme, eski işlerin oluşturduğu başlangıç gecikmesini içermez. Karşılanamayan talep kasadan kesilen para değildir.")
+		content.custom_minimum_size.y = 590
 	sync()
 
 func _districts() -> void:
@@ -225,6 +235,11 @@ func sync() -> void:
 	activity.text = "Filo %d • Yolda %d • Teslimat ~%s/dk\n%s • Kuyruk %d/30" % [game.workers, game.dispatch.team_active_count(), game._rate(minf(snapshot["capacity"], snapshot["demand"])), snapshot["bottleneck"], game.dispatch.pending.size()]
 	if is_instance_valid(flow_note):
 		flow_note.text = "Talep %s/dk • Kapasite ~%s/dk\nKuyruk %d/30 • Bu tur karşılanamayan talep: %s\nTahmini gelir; kasa teslimat tamamlanınca artar." % [_precise(snapshot["demand"]), _precise(snapshot["capacity"]), game.dispatch.pending.size(), game.Numbers.compact(game.dispatch.missed)]
+	if sheet_tab == 1 and is_instance_valid(motivation_body):
+		var cost: int = game._motivation_cost()
+		motivation_body.text = "Motivasyon Yıldızı: %s\nKalıcı seviye: %d / 20\nTeslimat kazancı: +%d%% → +%d%%\nSonraki yıldız: %d / 100 teslimat" % [game.Numbers.compact(game.motivation_stars), game.motivation_level, game.motivation_level * 20, mini(20, game.motivation_level + 1) * 20, game.star_progress]
+		motivation_buy.text = "TAMAMLANDI" if game.motivation_level >= 20 else "GELİŞTİR • %d YILDIZ" % cost
+		motivation_buy.disabled = game.motivation_level >= 20 or game.motivation_stars < cost
 	for key in cards:
 		var c: Dictionary = cards[key]
 		var role := int(str(key).trim_prefix("fleet")) if str(key).begins_with("fleet") else -1

@@ -24,11 +24,13 @@ func check() -> void:
 			expect(Rect2(Vector2.ZERO,game.size).encloses(button.get_rect()), "Bottom navigation must stay inside viewport")
 			expect(button.text.is_empty() and button.icon != null, "Navigation must use approved icons without visible text")
 			expect(button.size.x >= 44 and button.size.y >= 44, "Navigation touch targets must be at least 44px")
-		for tab in 3:
+		expect(game.company_ui.nav.size() == 5, "Five navigation sections required")
+		for tab in [4,0,1,2]:
+			var slot: int = game.company_ui.NAV_TABS.find(tab)
 			game.company_ui.open_tab(tab)
-			expect(game.company_ui.nav[tab].icon == game.company_ui.nav_pressed[tab], "Open tab must show its approved pressed artwork")
+			expect(game.company_ui.nav[slot].icon == game.company_ui.nav_pressed[slot], "Open tab must show its approved pressed artwork")
 			game.company_ui.close_all()
-			expect(game.company_ui.nav[tab].icon == game.company_ui.nav_normal[tab], "Closed tab must restore normal artwork")
+			expect(game.company_ui.nav[slot].icon == game.company_ui.nav_normal[slot], "Closed tab must restore normal artwork")
 		for district in 7:
 			game.district_index = district
 			var boxes: Array[Rect2] = []
@@ -38,12 +40,12 @@ func check() -> void:
 				expect(game._map_rect().encloses(rect), "Map touch area escaped enlarged map")
 				for other in boxes: expect(not rect.intersects(other), "Enlarged company map introduced overlapping markers")
 				boxes.append(rect)
-		game.company_ui.open_tab(2)
+		game.company_ui.open_tab(4)
 		for panel in game.company_ui.content.get_children():
 			if panel is Panel:
 				for child in panel.get_children():
 					if child is TextureRect: expect(child.size.x <= 54 and child.size.y <= 66, "Fleet portrait must not expand to atlas dimensions")
 		game._handle_android_back()
 	game.free()
-	if failures.is_empty(): print("Company layout passed: four tabs, seven maps, two phone ratios, 44px touch targets and bounded fleet portraits")
+	if failures.is_empty(): print("Company layout passed: five tabs, seven maps, two phone ratios, 44px touch targets and bounded fleet portraits")
 	quit(0 if failures.is_empty() else 1)

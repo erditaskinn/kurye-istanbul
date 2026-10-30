@@ -1,3 +1,5 @@
+> Güncel sürüm: **0.25.0-motivation**. İncelemeye [CLAUDE-OKU.md](CLAUDE-OKU.md) ile başlayın. Güncel ekranlar [docs/screenshots/current](docs/screenshots/current/) altında. Aşağıdaki eski aşama notları tarihsel olabilir.
+
 # İstanbul Kurye — 0.23.0-r6
 
 Mobil, portre, Godot4.6.3 idle kurye şirketi. Güncel ürün sözleşmesi docs/sirket-modeli-v3.md, araştırmanın özgün metni docs/idle-arastirma-notlari.md, aşama geçmişi docs/gelistirme-plani.md içindedir.
