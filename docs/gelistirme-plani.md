@@ -1,5 +1,11 @@
 # İstanbul Kurye — Geliştirme yol haritası
 
+## En son kontrol noktası — 0.27.0-readability / yeniden başlatma bekleniyor
+Kullanıcı test raporu düzeltmeleri ve anlaşılır font istedi. Ayar-zaman kaybı, rehber, tooltip, tekraröneri,44pxkapatma, yıldız/ödül/hedefgörünürlüğü ve okunaklıHUD uygulandı. docs/readability-0.27.md güncel kanıt/sınırlar.12betiktemiz; sesbetiği davranışkontrolleri geçiyor fakat WAVkapanışkaynağı uyarısı strictkapıyı durduruyor, açıkteknikiş. APKcode27hazır; telefon/GitHub'a gönderilmedi. Kullanıcı yenidenbaşlatacak; “açtım” sonrası ComputerUsebağlantısını yeniden kontrol et. Şimdi ComputerUse'ı tekrar deneme. Gerçekoyuncu testi henüz yapılamadı; kod/ekran testini onun yerine yapılmış sayma.
+
+## En son kontrol noktası — 0.26.0-progression
+30 Ekim: Kullanıcının kesmeden istediği motivasyon görseli, yıldız dengesi, uzmanlık kartları/ölçümü, dönüş özeti ve başarımlar tamamlandı. docs/progression-0.26.md güncel sözleşme/kanıt/sınırlar. İlk maliyet10yıldız, kalıcı20puan/seviye; dal hızları35/35/40%;13tek-seferlikbaşarım. Şema11/ekonomi7. İki adayda110tur, nihai55tur, ayrıca36gerçek4saatprofil;12güncelbetik geçti.8ekranPNG hazır. APKcode26imza/hizalama geçti; telefonbağlıdeğil, yüklenmedi ve telefonFPS/PSS ölçülmedi. GitHub'a push yapılmadı. Kaynak işleri tamamlandı; kullanıcı kontrolü için DUR. Aşağıdaki0.25veöncekinotlar tarihsel.
+
 ## En son kontrol noktası — 0.25.0-motivation telefon güncellemesi
 30 Ekim: Kullanıcının talebiyle Filo/Motivasyon kaynağından code25 APK aynı test paketine ve imzayla üretildi, imza/hizalama doğrulandı. SM-A505F RZ8M83P43BT üzerinde install -r başarılı; versionCode25/versionName0.25.0-motivation doğrulandı. Kurulum öncesi build/device-backup/before-motivation-* kaydı yedeklendi; kurulum sonrası SHA256 aynı, veri silinmedi. Oyun başlatılıp oynanış/şema göçü bu tur test edilmedi. GitHub'a bu değişiklikler gönderilmedi. Kullanıcı kontrolü için DUR; motivasyon+R7.3 denge/özel uzmanlık görseli/cihaz performansı bekliyor. Aşağıdaki APK-henüz-yok notları tarihsel durumu gösterir.
 

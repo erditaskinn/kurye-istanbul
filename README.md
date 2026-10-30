@@ -1,3 +1,7 @@
+> **Güncel: 0.27.0-readability / code27.** İncelemeye [INCELEME-OKU.md](INCELEME-OKU.md) ile başlayın. [Son ekranlar](docs/screenshots/readability-0.27/). Aşağıdaki eski sürüm notları tarihseldir.
+
+> Güncel yerel kaynak: **0.26.0-progression**, şema11. [Tamamlanan geliştirmeler](docs/progression-0.26.md) ve [yeni ekranlar](docs/screenshots/progression-0.26/) önce okunmalıdır. Önceki sürüm notları tarihseldir.
+
 > Güncel sürüm: **0.25.0-motivation**. İncelemeye [CLAUDE-OKU.md](CLAUDE-OKU.md) ile başlayın. Güncel ekranlar [docs/screenshots/current](docs/screenshots/current/) altında. Aşağıdaki eski aşama notları tarihsel olabilir.
 
 # İstanbul Kurye — 0.23.0-r6

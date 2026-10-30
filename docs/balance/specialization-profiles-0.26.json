@@ -1,0 +1,290 @@
+[
+	{
+		"capacity": 3.6288,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "standard",
+		"role": 1
+	},
+	{
+		"capacity": 4.89888,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "neighborhood",
+		"role": 1
+	},
+	{
+		"capacity": 3.6288,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "express",
+		"role": 1
+	},
+	{
+		"capacity": 3.6288,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "distribution",
+		"role": 1
+	},
+	{
+		"capacity": 2.54474053295933,
+		"cash": 95481,
+		"completed": 607,
+		"district": 3,
+		"model": "standard",
+		"role": 1
+	},
+	{
+		"capacity": 3.43539971949509,
+		"cash": 129358,
+		"completed": 824,
+		"district": 3,
+		"model": "neighborhood",
+		"role": 1
+	},
+	{
+		"capacity": 2.54474053295933,
+		"cash": 95481,
+		"completed": 607,
+		"district": 3,
+		"model": "express",
+		"role": 1
+	},
+	{
+		"capacity": 2.54474053295933,
+		"cash": 95481,
+		"completed": 607,
+		"district": 3,
+		"model": "distribution",
+		"role": 1
+	},
+	{
+		"capacity": 1.63459459459459,
+		"cash": 89089,
+		"completed": 400,
+		"district": 6,
+		"model": "standard",
+		"role": 1
+	},
+	{
+		"capacity": 2.2067027027027,
+		"cash": 119992,
+		"completed": 538,
+		"district": 6,
+		"model": "neighborhood",
+		"role": 1
+	},
+	{
+		"capacity": 1.63459459459459,
+		"cash": 89089,
+		"completed": 400,
+		"district": 6,
+		"model": "express",
+		"role": 1
+	},
+	{
+		"capacity": 1.63459459459459,
+		"cash": 89089,
+		"completed": 400,
+		"district": 6,
+		"model": "distribution",
+		"role": 1
+	},
+	{
+		"capacity": 5.9616,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "standard",
+		"role": 2
+	},
+	{
+		"capacity": 5.9616,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "neighborhood",
+		"role": 2
+	},
+	{
+		"capacity": 8.04816,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "express",
+		"role": 2
+	},
+	{
+		"capacity": 5.9616,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "distribution",
+		"role": 2
+	},
+	{
+		"capacity": 4.18064516129032,
+		"cash": 156539,
+		"completed": 993,
+		"district": 3,
+		"model": "standard",
+		"role": 2
+	},
+	{
+		"capacity": 4.18064516129032,
+		"cash": 156539,
+		"completed": 993,
+		"district": 3,
+		"model": "neighborhood",
+		"role": 2
+	},
+	{
+		"capacity": 5.64387096774194,
+		"cash": 211292,
+		"completed": 1341,
+		"district": 3,
+		"model": "express",
+		"role": 2
+	},
+	{
+		"capacity": 4.18064516129032,
+		"cash": 156539,
+		"completed": 993,
+		"district": 3,
+		"model": "distribution",
+		"role": 2
+	},
+	{
+		"capacity": 2.68540540540541,
+		"cash": 144071,
+		"completed": 640,
+		"district": 6,
+		"model": "standard",
+		"role": 2
+	},
+	{
+		"capacity": 2.68540540540541,
+		"cash": 144071,
+		"completed": 640,
+		"district": 6,
+		"model": "neighborhood",
+		"role": 2
+	},
+	{
+		"capacity": 3.6252972972973,
+		"cash": 194238,
+		"completed": 862,
+		"district": 6,
+		"model": "express",
+		"role": 2
+	},
+	{
+		"capacity": 2.68540540540541,
+		"cash": 144071,
+		"completed": 640,
+		"district": 6,
+		"model": "distribution",
+		"role": 2
+	},
+	{
+		"capacity": 5.106816,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "standard",
+		"role": 3
+	},
+	{
+		"capacity": 5.106816,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "neighborhood",
+		"role": 3
+	},
+	{
+		"capacity": 5.106816,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "express",
+		"role": 3
+	},
+	{
+		"capacity": 7.1495424,
+		"cash": 64327,
+		"completed": 719,
+		"district": 0,
+		"model": "distribution",
+		"role": 3
+	},
+	{
+		"capacity": 5.20904347826087,
+		"cash": 195426,
+		"completed": 1241,
+		"district": 3,
+		"model": "standard",
+		"role": 3
+	},
+	{
+		"capacity": 5.20904347826087,
+		"cash": 195426,
+		"completed": 1241,
+		"district": 3,
+		"model": "neighborhood",
+		"role": 3
+	},
+	{
+		"capacity": 5.20904347826087,
+		"cash": 195426,
+		"completed": 1241,
+		"district": 3,
+		"model": "express",
+		"role": 3
+	},
+	{
+		"capacity": 7.29266086956522,
+		"cash": 272311,
+		"completed": 1724,
+		"district": 3,
+		"model": "distribution",
+		"role": 3
+	},
+	{
+		"capacity": 5.64635675675676,
+		"cash": 302363,
+		"completed": 1342,
+		"district": 6,
+		"model": "standard",
+		"role": 3
+	},
+	{
+		"capacity": 5.64635675675676,
+		"cash": 302363,
+		"completed": 1342,
+		"district": 6,
+		"model": "neighborhood",
+		"role": 3
+	},
+	{
+		"capacity": 5.64635675675676,
+		"cash": 302363,
+		"completed": 1342,
+		"district": 6,
+		"model": "express",
+		"role": 3
+	},
+	{
+		"capacity": 7.90489945945946,
+		"cash": 422575,
+		"completed": 1873,
+		"district": 6,
+		"model": "distribution",
+		"role": 3
+	}
+]

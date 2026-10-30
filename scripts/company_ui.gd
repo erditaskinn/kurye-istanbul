@@ -5,6 +5,11 @@ const NAV_ART = preload("res://assets/ui/navigation/nav-icons-v1.png")
 const NAV_NAMES := ["Filo", "Geliştir", "Ekip Motivasyonu", "Şirket", "Ayarlar"]
 const NAV_TABS := [4, 0, 1, 2, 3]
 const FLEET_ART = preload("res://assets/ui/navigation/fleet-v1.png")
+var reward_badge: Label
+var motivation_hint: Button
+var motivation_bar: ProgressBar
+var motivation_balance: Label
+var achievement_rows: Dictionary = {}
 var motivation_body: Label
 var motivation_buy: Button
 var nav_normal: Array[AtlasTexture] = []
@@ -33,7 +38,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	income = game._label(Vector2.ZERO, Vector2(388, 30), 22, Color("70dfcf"), self)
-	activity = game._label(Vector2.ZERO, Vector2(390, 34), 12, Color("d8e4dd"), self)
+	activity = game._label(Vector2.ZERO, Vector2(402, 40), 12, Color("d8e4dd"), self)
 	emblem = TextureRect.new()
 	emblem.position = Vector2(8, 4)
 	emblem.size = Vector2(32, 32)
@@ -65,11 +70,16 @@ func _ready() -> void:
 		marker.hide()
 		nav_markers.append(marker)
 		nav.append(b)
+	reward_badge = game._label(Vector2.ZERO, Vector2(24, 20), 12, Color("071d2c"), nav[3])
+	reward_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	reward_badge.add_theme_stylebox_override("normal", game._button_style(Color("ffcf71"), Color("fff0d1")))
+	reward_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reward_badge.position = Vector2(64, 4)
 	sheet = game.FRAMED_PANEL.instantiate()
 	sheet.size = Vector2(456, 428)
 	add_child(sheet)
 	sheet_title = game._label(Vector2(16, 10), Vector2(365, 30), 21, Color("ffcf71"), sheet)
-	game._button(Vector2(398, 8), Vector2(42, 38), close_all, sheet).text = "×"
+	game._button(Vector2(398, 4), Vector2(44, 44), close_all, sheet).text = "×"
 	var scroll := ScrollContainer.new()
 	sheet_scroll = scroll
 	scroll.position = Vector2(16, 52)
@@ -155,7 +165,8 @@ func open_tab(index: int) -> void:
 		content.remove_child(child)
 		child.queue_free()
 	cards.clear()
-	sheet_title.text = ["GELİŞTİR", "EKİP MOTİVASYONU", "ŞİRKET", "AYARLAR", "FİLO"][index]
+	achievement_rows.clear()
+	sheet_title.text = ["GELİŞTİR", "EKİP MOTİVASYONU", "ŞİRKET", "AYARLAR", "FİLO", "BAŞARIMLAR"][index]
 	flow_note = game._label(Vector2(8, 0), Vector2(392, 58), 12, Color("b1c9c9"), content)
 	flow_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if index == 0:
@@ -165,11 +176,36 @@ func open_tab(index: int) -> void:
 		_note(630, "Katkı ve geri ödeme aynı ilçe/talep için yaklaşık değerlerdir. Kuyruktaki eski işler nedeniyle başlangıçta bu katkıya ulaşılmayabilir; geri ödeme süresi bu beklemeyi içermez.")
 		content.custom_minimum_size.y = 760
 	elif index == 1:
-		motivation_body = game._label(Vector2(8, 70), Vector2(390, 160), 17, Color("ffcf71"), content)
+		var panel: Panel = game.FRAMED_PANEL.instantiate()
+		panel.position = Vector2(2, 68); panel.size = Vector2(400, 80); content.add_child(panel)
+		_art(preload("res://assets/ui/progression/star.svg"), Vector2(14, 14), Vector2(54, 54), panel)
+		game._label(Vector2(90, 10), Vector2(295, 22), 14, Color("b1c9c9"), panel).text = "MOTİVASYON YILDIZI"
+		motivation_balance = game._label(Vector2(90, 32), Vector2(295, 36), 27, Color("ffcf71"), panel)
+		motivation_body = game._label(Vector2(12, 160), Vector2(386, 100), 16, Color("d7e4dd"), content)
 		motivation_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		motivation_buy = game._button(Vector2(8, 238), Vector2(390, 48), game._buy_motivation, content)
-		_note(302, "Her 100 tamamlanan teslimat: 1 yıldız. Her İstanbul İtibarı: 10 yıldız. Yıldızlar ve motivasyon seviyeleri yeni turlarda korunur. Bonus yeni kabul edilen işlere uygulanır; eski işler ücretini korur. Reklam veya gerçek para işlemi henüz bağlı değil.")
-		content.custom_minimum_size.y = 490
+		motivation_buy = game._button(Vector2(8, 308), Vector2(390, 48), game._buy_motivation, content)
+		game._primary_button(motivation_buy)
+		motivation_hint = game._button(Vector2(8, 2), Vector2(390, 52), open_tab.bind(5), content)
+		motivation_hint.add_theme_font_size_override("font_size", 13)
+		motivation_bar = _progress(Vector2(12, 272), Vector2(380, 20), content)
+		_note(376, "Her 100 teslimat: 1 yıldız • Her itibar: 10 yıldız. Başarımlar da yıldız verir. Seviye ve yıldızlar yeni turda korunur. Yeni bonus yeni işlere uygulanır. Eski işler ücretini korur; kalıcı bonus kendi içinde bileşik değildir.")
+		game._button(Vector2(8, 532), Vector2(390, 46), open_tab.bind(5), content).text = "BAŞARIMLARI İNCELE ›"
+		content.custom_minimum_size.y = 598
+	elif index == 5:
+		var y := 72
+		for item in game.Achievements.ITEMS:
+			var panel: Panel = game.FRAMED_PANEL.instantiate()
+			panel.position = Vector2(2, y); panel.size = Vector2(400, 150); content.add_child(panel)
+			_art(preload("res://assets/ui/progression/trophy.svg"), Vector2(12, 14), Vector2(42, 42), panel)
+			game._label(Vector2(66, 12), Vector2(320, 26), 18, Color("ffcf71"), panel).text = item[1]
+			var detail: Label = game._label(Vector2(14, 64), Vector2(248, 30), 13, Color("d7e4dd"), panel)
+			var bar := _progress(Vector2(14, 106), Vector2(240, 18), panel)
+			var button: Button = game._button(Vector2(266, 76), Vector2(122, 48), game._claim_achievement.bind(str(item[0])), panel)
+			button.add_theme_font_size_override("font_size", 12)
+			achievement_rows[str(item[0])] = {"detail": detail, "bar": bar, "button": button}
+			y += 162
+		_note(y + 8, "Süre sınırı yok. Her ödül bir kez alınır; alınmış başarımlar yeni turda korunur. Tam oyun sıfırlama başarımları da sıfırlar.")
+		content.custom_minimum_size.y = y + 170
 	elif index == 4:
 		for i in 4: _card("fleet" + str(i), 66 + i * 188, game.STAFF_NAMES[i], "", game._hire_worker.bind(i), i)
 		_note(826, "Tüm filo türleri başlangıçtan açıktır. Talep zaten karşılanıyorsa yeni çalışan sürekli geliri artırmayabilir.")
@@ -181,9 +217,27 @@ func open_tab(index: int) -> void:
 		game._button(Vector2(6, 96), Vector2(390, 44), open_creation, content).text = "ŞİRKET ADI VE LOGOSU"
 		_card("operations", 152, "Operasyon Merkezi", "", game._buy_company_upgrade.bind("operations"))
 		game._button(Vector2(6, 340), Vector2(390, 44), _districts, content).text = "İLÇELER VE İSTANBUL ALBÜMÜ ›"
-		_note(402, ("Uzmanlık: " + game.Specialization.TITLES[game.Specialization.IDS.find(game.specialization_id)] + ". Sonraki itibarda ücretsiz seçim. " if game.rebirth_count > 0 else "Uzmanlık ilk İstanbul İtibarı ile açılır. ") + "Tahminler yeni işler/kuyruk oturduğunda geçerlidir. Geri ödeme, eski işlerin oluşturduğu başlangıç gecikmesini içermez. Karşılanamayan talep kasadan kesilen para değildir.")
-		content.custom_minimum_size.y = 590
+		game._button(Vector2(6, 396), Vector2(390, 44), open_tab.bind(5), content).text = "BAŞARIMLAR VE YILDIZ ÖDÜLLERİ ›"
+		_note(456, ("Uzmanlık: " + game.Specialization.TITLES[game.Specialization.IDS.find(game.specialization_id)] + ". Sonraki itibarda ücretsiz seçim. " if game.rebirth_count > 0 else "Uzmanlık ilk İstanbul İtibarı ile açılır. ") + "Tahminler yeni işler/kuyruk oturduğunda geçerlidir. Geri ödeme, eski işlerin oluşturduğu başlangıç gecikmesini içermez. Karşılanamayan talep kasadan kesilen para değildir.")
+		content.custom_minimum_size.y = 630
 	sync()
+
+func _art(texture: Texture2D, position_value: Vector2, size_value: Vector2, parent: Control) -> void:
+	var image := TextureRect.new()
+	image.texture = texture; image.position = position_value; image.size = size_value
+	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(image)
+
+func _progress(position_value: Vector2, size_value: Vector2, parent: Control) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.position = position_value; bar.size = size_value; bar.show_percentage = false
+	bar.add_theme_stylebox_override("background", game._button_style(Color("031422"), Color("8c7046")))
+	var fill := StyleBoxFlat.new(); fill.bg_color = Color("70dfcf")
+	bar.add_theme_stylebox_override("fill", fill)
+	parent.add_child(bar)
+	return bar
 
 func _districts() -> void:
 	close_all()
@@ -232,14 +286,37 @@ func sync() -> void:
 	create_button.disabled = name_field.text.strip_edges().length() < 2
 	var snapshot: Dictionary = game._production_snapshot()
 	income.text = "~%s ₺ / sn" % game.Numbers.compact(float(snapshot["income"]) / 60.0, 1)
-	activity.text = "Filo %d • Yolda %d • Teslimat ~%s/dk\n%s • Kuyruk %d/30" % [game.workers, game.dispatch.team_active_count(), game._rate(minf(snapshot["capacity"], snapshot["demand"])), snapshot["bottleneck"], game.dispatch.pending.size()]
+	var target: String = "İtibar: %s / %s ₺" % [game.Numbers.compact(game.run_earned), game.Numbers.compact(game.run_prestige_target)]
+	if game.unlocked_district_index < 6:
+		target = "%s: %s / %s ₺" % [game.DISTRICTS[game.unlocked_district_index + 1], game.Numbers.compact(game.run_earned), game.Numbers.compact(game.DISTRICT_THRESHOLDS[game.unlocked_district_index + 1])]
+	activity.text = "%s • Filo %d\nİtibar %d • %s" % [target, game.workers, game.rebirth_count, snapshot["bottleneck"]]
+	reward_badge.text = str(game.Achievements.available(game))
+	reward_badge.visible = game.Achievements.available(game) > 0
 	if is_instance_valid(flow_note):
+		flow_note.visible = sheet_tab != 1
 		flow_note.text = "Talep %s/dk • Kapasite ~%s/dk\nKuyruk %d/30 • Bu tur karşılanamayan talep: %s\nTahmini gelir; kasa teslimat tamamlanınca artar." % [_precise(snapshot["demand"]), _precise(snapshot["capacity"]), game.dispatch.pending.size(), game.Numbers.compact(game.dispatch.missed)]
 	if sheet_tab == 1 and is_instance_valid(motivation_body):
 		var cost: int = game._motivation_cost()
-		motivation_body.text = "Motivasyon Yıldızı: %s\nKalıcı seviye: %d / 20\nTeslimat kazancı: +%d%% → +%d%%\nSonraki yıldız: %d / 100 teslimat" % [game.Numbers.compact(game.motivation_stars), game.motivation_level, game.motivation_level * 20, mini(20, game.motivation_level + 1) * 20, game.star_progress]
-		motivation_buy.text = "TAMAMLANDI" if game.motivation_level >= 20 else "GELİŞTİR • %d YILDIZ" % cost
+		motivation_hint.text = "100 teslimat = 1 yıldız • İtibar = 10 yıldız\nBaşarımlardan da kazan › (%d hazır)" % game.Achievements.available(game)
+		motivation_balance.text = game.Numbers.compact(game.motivation_stars)
+		motivation_bar.value = game.star_progress
+		motivation_bar.tooltip_text = "%d / 100 teslimat" % game.star_progress
+		var current: float = game._motivation_multiplier()
+		var next: float = 1.0 + mini(20, game.motivation_level + 1) * 0.20
+		var relative: float = (next / current - 1.0) * 100.0
+		motivation_body.text = "KALICI SEVİYE %d / 20\nKazanç bonusu: +%d%% → +%d%%\nMevcut ücrete göre: +%s%%\nSonraki yıldız: %d / 100 teslimat" % [game.motivation_level, game.motivation_level * 20, mini(20, game.motivation_level + 1) * 20, _precise(relative), game.star_progress]
+		motivation_buy.text = "TAMAMLANDI" if game.motivation_level >= 20 else ("GELİŞTİR • %d YILDIZ" % cost if game.motivation_stars >= cost else "%d YILDIZ GEREKLİ • %d EKSİK" % [cost, cost - game.motivation_stars])
 		motivation_buy.disabled = game.motivation_level >= 20 or game.motivation_stars < cost
+	if sheet_tab == 5:
+		flow_note.text = "Kalıcı hedefler • Süre sınırı yok\nAlınabilir ödül: %d • Tamamlanan: %d / %d\nYıldız bakiyesi: %s" % [game.Achievements.available(game), game.achievement_claimed.size(), game.Achievements.ITEMS.size(), game.Numbers.compact(game.motivation_stars)]
+		for item in game.Achievements.ITEMS:
+			var row: Dictionary = achievement_rows[str(item[0])]
+			var value: int = mini(game.Achievements.progress(game, item), int(item[3]))
+			var claimed: bool = game.achievement_claimed.has(item[0])
+			row["detail"].text = "%s / %s %s" % [game.Numbers.compact(value), game.Numbers.compact(item[3]), {"delivery":"teslimat", "revenue":"₺ toplam ciro", "album":"ilçe", "prestige":"itibar", "motivation":"motivasyon seviyesi"}[item[2]]]
+			row["bar"].value = 100.0 * value / float(item[3])
+			row["button"].text = "ALINDI" if claimed else ("AL • %d YILDIZ" % item[4] if value >= int(item[3]) else "%d YILDIZ" % item[4])
+			row["button"].disabled = claimed or value < int(item[3]) or not game.save_store.writable
 	for key in cards:
 		var c: Dictionary = cards[key]
 		var role := int(str(key).trim_prefix("fleet")) if str(key).begins_with("fleet") else -1
@@ -309,7 +386,7 @@ func _build_creation() -> void:
 	creation_card.size = Vector2(448, 610)
 	creation.add_child(creation_card)
 	game._label(Vector2(18, 16), Vector2(350, 30), 23, Color("ffcf71"), creation_card).text = "ŞİRKETİNİ KUR"
-	game._button(Vector2(390, 12), Vector2(40, 38), close_all, creation_card).text = "×"
+	game._button(Vector2(388, 10), Vector2(44, 44), close_all, creation_card).text = "×"
 	game._label(Vector2(18, 53), Vector2(410, 40), 13, Color("d7e4dd"), creation_card).text = "Bir isim ve logo seç. İlk yaya kuryen hazır;\nteslimatlar senin şirketin için otomatik başlasın."
 	name_field = LineEdit.new()
 	name_field.position = Vector2(18, 103)

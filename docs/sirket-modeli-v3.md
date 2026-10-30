@@ -1,5 +1,7 @@
 # Şirket modeli V3 — ekonomi7 / 0.21.0-r4
 
+0.26 güncellemesi: docs/progression-0.26.md güncel üst sözleşmedir. Şema11, ilk motivasyon10yıldız; bonus20puan/seviye aynı; uzmanlık hızları35/35/40%;13kalıcıbaşarım ve dönüşte yıldız ilerlemesi vardır. Aşağıdaki önceki ekler tarihsel katsayıları içerebilir.
+
 30 Ekim güncel ek: docs/filo-motivasyon-yildizi.md yeni beşli altbar ve kalıcı motivasyon kurallarını günceller. Şema10; eski Konfor Geliştir'e taşındı. Yeni Ekip Motivasyonu yıldız harcar; itibar sonrası korunur. Aşağıdaki eski tur içi seviyeler listesi Konfor'a aittir, yeni motivasyon seviyesine değil.
 
 Güncel mekanik sözleşmesi. V2'nin aşağıdaki sayısal/ilerleme maddelerini günceller; araştırmanın idle, çevrim dışı ve sabit harita ilkeleri korunur. İlk insan oynanış dengesi henüz onaylanmış değildir.

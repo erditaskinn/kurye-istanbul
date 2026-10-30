@@ -1,3 +1,7 @@
+## 0.26 güncel ek
+
+Güncel kabul kapısı tools/test_company.ps1 ile12betiktir. progression.gd tek-seferlik atomik başarım ödülleri, restart/prestige/reset, eski şema göçü, offline yıldız/lifetime sayaçları, iki oranlı motivasyon/başarım kartları ve uzmanlık modal gezinmesini ekler. specialization.gd yeni35/35/40rol katsayılarını, motivation.gd yeni10yıldız başlangıç maliyetini kullanır. Eski tablo ve katsayı notları tarihsel olabilir.
+
 # Güncel kabul kapsamı — R6
 
 Şirket modeli ekonomi7/şema8 için tek güncel koşu:

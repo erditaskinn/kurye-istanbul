@@ -1,6 +1,6 @@
 extends RefCounted
 
-const VERSION := 10
+const VERSION := 11
 var writable := true
 
 func _read(path: String) -> Dictionary:

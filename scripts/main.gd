@@ -1,17 +1,20 @@
 extends Control
 const Specialization = preload("res://scripts/specialization.gd")
+const Achievements = preload("res://scripts/achievements.gd")
+var lifetime_deliveries := 0
+var achievement_claimed: Array[String] = []
 var motivation_stars := 0
 var motivation_level := 0
 var star_progress := 0
 var specialization_id := "standard"
-var model_menu: PopupMenu
+var model_menu: AcceptDialog
 var specialization_choice: OptionButton
 var deliveries_label: Label
 var revenue_label: Label
 var money_label: Label
 var district_button: Button
 var title_label: Label
-var header_font: FontFile
+var header_font: Font
 const HEADER_FONT = preload("res://assets/fonts/Tiny5.ttf")
 const HEADER_PANELS = [preload("res://assets/ui/header/v2/cash.png"), preload("res://assets/ui/header/v2/revenue.png"), preload("res://assets/ui/header/v2/deliveries.png"), preload("res://assets/ui/header/v2/district.png")]
 var header_panels: Array[AtlasTexture] = []
@@ -538,11 +541,16 @@ func _open_settings() -> void:
 		_save_game()
 	settings_overlay.visible = true
 
+func _settle_settings_time() -> void:
+	if settings_overlay != null and settings_overlay.visible and has_started and not menu_overlay.visible and int(Time.get_unix_time_from_system()) > last_saved_at:
+		_apply_offline_income()
+
 func _refresh_feedback_buttons() -> void:
 	if sound_button != null: sound_button.text = "SES EFEKTLERİ: " + ("AÇIK" if sound_enabled else "KAPALI")
 	if haptics_button != null: haptics_button.text = "TİTREŞİM: " + ("AÇIK" if haptics_enabled else "KAPALI")
 
 func _toggle_sound() -> void:
+	_settle_settings_time()
 	sound_enabled = not sound_enabled
 	_refresh_feedback_buttons()
 	_save_game()
@@ -551,6 +559,7 @@ func _toggle_sound() -> void:
 		else: feedback.player.stop()
 
 func _toggle_haptics() -> void:
+	_settle_settings_time()
 	haptics_enabled = not haptics_enabled
 	_refresh_feedback_buttons()
 	_save_game()
@@ -567,6 +576,7 @@ func _close_settings() -> void:
 		_show_return_summary()
 
 func _back_to_menu() -> void:
+	_settle_settings_time()
 	if not menu_overlay.visible:
 		_save_game()
 	_close_location_card()
@@ -608,6 +618,8 @@ func _reset_progress() -> void:
 	unlocked_district_index = 0
 	district_selection = 0
 	_build_roads()
+	lifetime_deliveries = 0
+	achievement_claimed.clear()
 	motivation_stars = 0
 	motivation_level = 0
 	star_progress = 0
@@ -701,15 +713,13 @@ func _build_district_panel() -> void:
 	for title in Specialization.TITLES: specialization_choice.add_item(title)
 	specialization_choice.item_selected.connect(_select_specialization)
 	add_child(specialization_choice)
-	model_menu = PopupMenu.new()
-	model_menu.add_theme_constant_override("v_separation", 22)
-	for title in Specialization.TITLES: model_menu.add_item(title)
-	model_menu.id_pressed.connect(_select_specialization)
-	add_child(model_menu)
 	rebirth_dialog.add_button("MODEL SEÇ", true, "model")
 	rebirth_dialog.custom_action.connect(_show_specialization_menu)
 	rebirth_dialog.confirmed.connect(_rebirth)
 	add_child(rebirth_dialog)
+	model_menu = preload("res://scripts/specialization_picker.gd").new()
+	rebirth_dialog.add_child(model_menu)
+	model_menu.build(self)
 	rebirth_dialog.borderless = true
 	prestige_shade = ColorRect.new()
 	prestige_shade.color = Color("06121cd9")
@@ -1030,17 +1040,20 @@ func _make_company_order() -> Dictionary:
 	return _order_quote(from_index, to_index)
 
 func _advance_simulation(delta: float) -> Dictionary:
-	advance_report = {"solo": 0, "team": 0, "completed": 0}
+	var stars_before := motivation_stars
+	advance_report = {"solo": 0, "team": 0, "completed": 0, "stars": 0}
 	var counts: Array[int] = [0, 0, 0, 0]
 	if company:
 		counts = staff_counts
 	dispatch.advance(delta, counts, district_index, _make_company_order, -1 if simulation_economy_version >= 6 else vehicle, _on_order_finished, func() -> int: return district_index, Economy.LEGACY_DEMAND if simulation_economy_version < 2 else [], local_metrics.advance)
 	_sync_founder_state()
+	advance_report["stars"] = motivation_stars - stars_before
 	return advance_report.duplicate()
 
 func _on_order_finished(job: Dictionary) -> void:
 	var founder := int(job["role"]) == Dispatch.FOUNDER
 	var paid := int(job.get("founder_paid" if founder else "paid", job["payout"]))
+	lifetime_deliveries += 1
 	star_progress += 1
 	if star_progress >= 100:
 		motivation_stars += star_progress / 100
@@ -1138,7 +1151,7 @@ func _select_specialization(index: int) -> void:
 	_refresh_prestige_preview()
 
 func _show_specialization_menu(_action: StringName) -> void:
-	model_menu.popup(Rect2i(rebirth_dialog.position + Vector2i(30, 140), Vector2i(360, 240)))
+	model_menu.open()
 
 func _confirm_rebirth() -> void:
 	specialization_choice.select(Specialization.IDS.find(specialization_id))
@@ -1329,9 +1342,10 @@ func _refresh_ui() -> void:
 	if company_ui != null: company_ui.sync()
 
 func _save_data() -> Dictionary:
-	return {"motivation_stars": motivation_stars, "motivation_level": motivation_level, "star_progress": star_progress, "specialization_id": specialization_id, "feedback_settings": {"sound": sound_enabled, "haptics": haptics_enabled}, "economy_version": Economy.VERSION, "run_prestige_target": run_prestige_target, "legacy_speed_floor": legacy_speed_floor, "company_name": company_name, "company_logo": company_logo, "brand_ready": brand_ready, "bonus_level": bonus_level, "operations_level": operations_level, "comfort_level": comfort_level, "starter_role": starter_role, "local_metrics": local_metrics.to_save(), "guide_seen": guide_seen, "service_level": service_level, "migration_notice": migration_notice, "rng_state": str(rng.state), "return_summary": return_summary, "started": has_started, "money": money, "total_earned": total_earned, "run_earned": run_earned, "district_index": district_index, "unlocked_district_index": unlocked_district_index, "album_unlocked": album_unlocked, "rebirth_count": rebirth_count, "deliveries": deliveries, "vehicle": vehicle, "company": company, "workers": workers, "staff_counts": staff_counts, "dispatch": dispatch.to_save(), "pickup_index": pickup_index, "drop_index": drop_index, "order_payout": order_payout, "carrying": carrying, "camera_center": [camera_center.x, camera_center.y], "camera_zoom": camera_zoom, "camera_follow": camera_follow, "last_saved_at": last_saved_at}
+	return {"lifetime_deliveries": lifetime_deliveries, "achievement_claimed": achievement_claimed.duplicate(), "motivation_stars": motivation_stars, "motivation_level": motivation_level, "star_progress": star_progress, "specialization_id": specialization_id, "feedback_settings": {"sound": sound_enabled, "haptics": haptics_enabled}, "economy_version": Economy.VERSION, "run_prestige_target": run_prestige_target, "legacy_speed_floor": legacy_speed_floor, "company_name": company_name, "company_logo": company_logo, "brand_ready": brand_ready, "bonus_level": bonus_level, "operations_level": operations_level, "comfort_level": comfort_level, "starter_role": starter_role, "local_metrics": local_metrics.to_save(), "guide_seen": guide_seen, "service_level": service_level, "migration_notice": migration_notice, "rng_state": str(rng.state), "return_summary": return_summary, "started": has_started, "money": money, "total_earned": total_earned, "run_earned": run_earned, "district_index": district_index, "unlocked_district_index": unlocked_district_index, "album_unlocked": album_unlocked, "rebirth_count": rebirth_count, "deliveries": deliveries, "vehicle": vehicle, "company": company, "workers": workers, "staff_counts": staff_counts, "dispatch": dispatch.to_save(), "pickup_index": pickup_index, "drop_index": drop_index, "order_payout": order_payout, "carrying": carrying, "camera_center": [camera_center.x, camera_center.y], "camera_zoom": camera_zoom, "camera_follow": camera_follow, "last_saved_at": last_saved_at}
 
 func _save_game() -> void:
+	_settle_settings_time()
 	last_saved_at = maxi(last_saved_at, int(Time.get_unix_time_from_system()))
 	if not save_store.write_record(SAVE_PATH, _save_data()):
 		push_error("Game save could not be committed; previous record retained")
@@ -1367,7 +1381,7 @@ func _load_game() -> void:
 	guide_seen = bool(data.get("guide_seen", true))
 	var saved_summary = data.get("return_summary", {})
 	if saved_summary is Dictionary:
-		for key in ["seconds", "solo", "team", "completed", "capped"]:
+		for key in ["seconds", "solo", "team", "completed", "capped", "stars"]:
 			return_summary[key] = maxi(0, int(saved_summary.get(key, 0)))
 	has_started = bool(data.get("started", true))
 	money = max(0, int(data.get("money", 0)))
@@ -1396,6 +1410,12 @@ func _load_game() -> void:
 	for count in staff_counts:
 		workers += count
 	dispatch.restore(data.get("dispatch", null))
+	lifetime_deliveries = maxi(0, int(data.get("lifetime_deliveries", dispatch.completed + dispatch.founder_completed)))
+	achievement_claimed.clear()
+	var saved_claims = data.get("achievement_claimed", [])
+	if saved_claims is Array:
+		for item in Achievements.ITEMS:
+			if saved_claims.has(item[0]): achievement_claimed.append(str(item[0]))
 	var old_index := int(data.get("route_index", 0))
 	pickup_index = posmod(int(data.get("pickup_index", old_index)), PICKUPS.size())
 	drop_index = posmod(int(data.get("drop_index", old_index)), DROPS.size())
@@ -1501,7 +1521,8 @@ func _settle_legacy_offline() -> void:
 	if elapsed >= 60 and solo + team > 0:
 		_accumulate_return_summary(elapsed, solo, team, dispatch.completed - completed_before, absence > OFFLINE_LIMIT_SECONDS)
 
-func _accumulate_return_summary(seconds: int, solo: int, team: int, finished: int, capped: bool) -> void:
+func _accumulate_return_summary(seconds: int, solo: int, team: int, finished: int, capped: bool, stars: int = 0) -> void:
+	return_summary["stars"] = int(return_summary.get("stars", 0)) + stars
 	return_summary["seconds"] = int(return_summary.get("seconds", 0)) + seconds
 	return_summary["solo"] = int(return_summary.get("solo", 0)) + solo
 	return_summary["team"] = int(return_summary.get("team", 0)) + team
@@ -1521,7 +1542,7 @@ func _apply_offline_income() -> int:
 	if elapsed >= 60 and income > 0:
 		local_metrics.begin_visit()
 		local_metrics.record("offline_return", {"absence_seconds": absence, "accounted_seconds": elapsed, "income": income, "solo": int(report["solo"]), "team": int(report["team"]), "capped": absence > OFFLINE_LIMIT_SECONDS})
-		_accumulate_return_summary(elapsed, int(report["solo"]), int(report["team"]), int(report["completed"]), absence > OFFLINE_LIMIT_SECONDS)
+		_accumulate_return_summary(elapsed, int(report["solo"]), int(report["team"]), int(report["completed"]), absence > OFFLINE_LIMIT_SECONDS, int(report.get("stars", 0)))
 	return income
 
 func _draw() -> void:
@@ -1573,8 +1594,8 @@ func _build_return_summary() -> void:
 	return_time_label = _label(Vector2(24, 57), Vector2(392, 40), 13, Color("a6b9c5"), return_panel)
 	return_total_label = _label(Vector2(24, 105), Vector2(392, 48), 36, Color("70dfcf"), return_panel)
 	_label(Vector2(24, 154), Vector2(392, 22), 13, Color("fff0d1"), return_panel).text = "Kazanç kasana eklendi • Teslimatlar sürüyor"
-	return_breakdown_label = _label(Vector2(24, 189), Vector2(392, 52), 15, Color("fff0d1"), return_panel)
-	return_goal_label = _label(Vector2(24, 246), Vector2(392, 66), 13, Color("ffcf71"), return_panel)
+	return_breakdown_label = _label(Vector2(24, 189), Vector2(392, 58), 12, Color("fff0d1"), return_panel)
+	return_goal_label = _label(Vector2(24, 252), Vector2(392, 60), 12, Color("ffcf71"), return_panel)
 	return_goal_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for i in 3:
 		var choice := _button(Vector2(24, 318 + i * 66), Vector2(392, 60), _open_return_choice.bind(i), return_panel)
@@ -1599,6 +1620,7 @@ func _show_return_summary() -> void:
 	return_breakdown_label.text = "Kuryen: +%s ₺\nEkibin: +%s ₺ • %s teslimat" % [Numbers.compact(int(return_summary.get("solo", 0))), Numbers.compact(int(return_summary.get("team", 0))), Numbers.compact(int(return_summary.get("completed", 0)))]
 	if simulation_economy_version >= 6:
 		return_breakdown_label.text = "Filo: +%s ₺\nTamamlanan ekip teslimatı: %s" % [Numbers.compact(int(return_summary.get("solo", 0)) + int(return_summary.get("team", 0))), Numbers.compact(int(return_summary.get("completed", 0)))]
+	return_breakdown_label.text += "\nYıldız: +%d • Sonraki: %d/100 teslimat" % [int(return_summary.get("stars", 0)), star_progress]
 	guide_panel.hide()
 	district_panel.hide()
 	return_overlay.visible = true
@@ -1776,10 +1798,14 @@ func _refresh_return_choices() -> void:
 		target = "%s açık • İlçe ekranından seç" % DISTRICTS[unlocked_district_index]
 		return_goal_label.text = "ŞİMDİ: %s • Kasa %s ₺\nTalep %s / kapasite %s iş/dk\nHEDEF: %s" % [snapshot["bottleneck"], Numbers.compact(money), _rate(float(snapshot["demand"])), _rate(float(snapshot["capacity"])), target]
 	return_choices = _return_investments()
+	if motivation_level < 20 and motivation_stars >= _motivation_cost():
+		return_choices.push_front({"kind": "motivation", "name": "Kalıcı motivasyon: %d yıldız" % _motivation_cost()})
+	elif Achievements.available(self) > 0:
+		return_choices.push_front({"kind": "achievements", "name": "Hazır başarım ödülleri: %d" % Achievements.available(self)})
 	if unlocked_district_index > district_index:
 		return_choices.push_front({"kind": "district", "name": "Açık ilçeleri karşılaştır"})
 		if return_choices.size() > 3: return_choices.resize(3)
-	if return_choices.size() < 3:
+	if return_choices.size() < 3 and not return_choices.any(func(row: Dictionary) -> bool: return row["kind"] == "district"):
 		return_choices.append({"kind": "district", "name": "İlçe hedefini incele"})
 	if return_choices.size() < 3:
 		return_choices.append({"kind": "guide", "name": "Yatırım rehberini aç"})
@@ -1792,7 +1818,7 @@ func _refresh_return_choices() -> void:
 			button.text = "%s • %s ₺ • ~+%s ₺/dk\n%s • İncele ›" % [choice["name"], Numbers.compact(int(choice["cost"])), _rate(float(choice["gain"])), _purchase_target(int(choice["cost"]))]
 			button.tooltip_text = _investment_tooltip(choice) + "\nBu düğme satın almaz; yatırım ekranına döner."
 		else:
-			button.text = "%s ›\n%s" % [choice["name"], "Yeni talep için sonraki hedef" if choice["kind"] == "district" else "Hız, ücret ve kapasite farkı"]
+			button.text = "%s ›\n%s" % [choice["name"], "Yeni iş kapasitesini karşılaştır" if choice["kind"] == "district" else ("Kalıcı yüzde bonusunu incele" if choice["kind"] == "motivation" else ("Yıldız ödüllerini incele" if choice["kind"] == "achievements" else "Hız, ücret ve kapasite farkı"))]
 			button.tooltip_text = "Bilgi ekranını aç; satın alma yapılmaz."
 
 func _open_return_choice(index: int) -> void:
@@ -1802,6 +1828,8 @@ func _open_return_choice(index: int) -> void:
 	var choice: Dictionary = return_choices[index].duplicate()
 	_dismiss_return_summary()
 	match str(choice["kind"]):
+		"motivation": company_ui.open_tab(1)
+		"achievements": company_ui.open_tab(5)
 		"worker":
 			if company: _toggle_company_panel()
 		"district": _toggle_district_panel()
@@ -1899,6 +1927,9 @@ func _track_investment(kind: String, cost: int, level: int) -> void:
 		feedback.purchase(label)
 
 func _handle_android_back() -> void:
+	if model_menu.visible:
+		model_menu.hide()
+		return
 	if company_ui != null and company_ui.blocks_map():
 		company_ui.close_all()
 		return
@@ -1930,20 +1961,40 @@ func _focus_job() -> Dictionary:
 	if simulation_economy_version < 6: return dispatch.founder_job()
 	return dispatch.active[0] if not dispatch.active.is_empty() else {}
 
+func _claim_achievement(id: String) -> void:
+	if achievement_claimed.has(id) or not save_store.writable: return
+	for item in Achievements.ITEMS:
+		if str(item[0]) != id or Achievements.progress(self, item) < int(item[3]): continue
+		var candidate := _save_data().duplicate(true)
+		candidate["last_saved_at"] = maxi(last_saved_at, int(Time.get_unix_time_from_system()))
+		candidate["achievement_claimed"].append(id)
+		candidate["motivation_stars"] = motivation_stars + int(item[4])
+		if not save_store.write_record(SAVE_PATH, candidate):
+			_announce("Başarım kaydedilemedi; ödülün korunuyor")
+			return
+		last_saved_at = int(candidate["last_saved_at"])
+		achievement_claimed.append(id)
+		motivation_stars = int(candidate["motivation_stars"])
+		_refresh_ui()
+		if is_instance_valid(feedback): feedback.milestone("Başarım • %s • +%d yıldız" % [item[1], item[4]])
+		return
+
 func _motivation_multiplier() -> float:
 	return 1.0 + motivation_level * 0.20
 
 func _motivation_cost() -> int:
-	return int(ceil(5.0 * pow(1.45, motivation_level)))
+	return int(ceil(10.0 * pow(1.45, motivation_level)))
 
 func _buy_motivation() -> void:
 	if motivation_level >= 20 or motivation_stars < _motivation_cost() or not save_store.writable: return
 	var candidate := _save_data().duplicate(true)
+	candidate["last_saved_at"] = maxi(last_saved_at, int(Time.get_unix_time_from_system()))
 	candidate["motivation_stars"] = motivation_stars - _motivation_cost()
 	candidate["motivation_level"] = motivation_level + 1
 	if not save_store.write_record(SAVE_PATH, candidate):
 		_announce("Motivasyon kaydedilemedi; yıldızların korundu")
 		return
+	last_saved_at = int(candidate["last_saved_at"])
 	motivation_stars = int(candidate["motivation_stars"])
 	motivation_level += 1
 	_refresh_ui()
@@ -2001,14 +2052,14 @@ func _buy_company_upgrade(kind: String) -> void:
 func _build_guide() -> void:
 	guide_panel = FRAMED_PANEL.instantiate()
 	guide_panel.position = Vector2(16, 163)
-	guide_panel.size = Vector2(448, 224)
+	guide_panel.size = Vector2(448, 238)
 	add_child(guide_panel)
 	guide_title = _label(Vector2(16, 12), Vector2(414, 28), 19, Color("ffcf71"), guide_panel)
 	guide_body = _label(Vector2(16, 46), Vector2(414, 94), 15, Color("fff0d1"), guide_panel)
 	guide_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	guide_goal = _label(Vector2(16, 143), Vector2(414, 32), 12, Color("70dfcf"), guide_panel)
 	guide_goal.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var close := _button(Vector2(16, 181), Vector2(414, 32), _toggle_guide, guide_panel)
+	var close := _button(Vector2(16, 181), Vector2(414, 44), _toggle_guide, guide_panel)
 	close.text = "ANLADIM • OYUNA DÖN"
 	close.add_theme_font_size_override("font_size", 13)
 	guide_panel.hide()
@@ -2027,7 +2078,7 @@ func _toggle_guide() -> void:
 func _refresh_guide() -> void:
 	if simulation_economy_version >= 6:
 		guide_title.text = "ŞİRKET YÖNETİMİ"
-		guide_body.text = "Şirket bölümünden filonu büyüt. Geliştir bölümünde hizmet ve prim, Motivasyon bölümünde konfor yatırımı seç. Teslimatlar ve kasa otomatik ilerler."
+		guide_body.text = "Filo: kurye ekle. Geliştir: hizmet, prim ve konfor. Motivasyon: yıldızla kalıcı kazanç. Şirket: operasyon, ilçeler ve başarımlar. Teslimatlar otomatik ilerler."
 		guide_goal.text = "Talep ve kapasiteyi karşılaştır; gösterilen ₺/sn tahmini ortalamadır."
 		return
 

@@ -20,8 +20,8 @@ func run() -> void:
 			var actual: Array = g._company_speeds()
 			for role in 4:
 				var factor := 1.0
-				if (model == 1 and role < 2) or (model == 2 and role == 2): factor = 1.15
-				if model == 3 and role == 3: factor = 1.2
+				if (model == 1 and role < 2) or (model == 2 and role == 2): factor = 1.35
+				if model == 3 and role == 3: factor = 1.4
 				check(is_equal_approx(actual[role], base[role] * factor), "Role effect mismatch")
 			var quote: Dictionary = g._order_quote(0, 0)
 			check(quote["speed_profile"] == actual, "Quote differs from effective speed")

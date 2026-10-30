@@ -4,9 +4,11 @@ var game: Control
 func _init(owner: Control) -> void:
 	game=owner
 func build() -> void:
-	game.header_font = game.HEADER_FONT.duplicate()
-	game.header_font.antialiasing = TextServer.FONT_ANTIALIASING_NONE
-	game.header_font.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED
+	game.header_font = FontVariation.new()
+	game.header_font.base_font = ThemeDB.fallback_font
+	game.header_font.fallbacks = [game.HEADER_FONT]
+	game.theme = game.UI_THEME.duplicate()
+	game.theme.default_font = game.header_font
 	for texture in game.HEADER_PANELS:
 		var tile := AtlasTexture.new()
 		tile.atlas = texture
@@ -31,7 +33,7 @@ func build() -> void:
 	game.deliveries_label = game._label(Vector2(376, 72), Vector2(90, 27), 24, Color("70dfcf"))
 	for counter in [game.money_label, game.revenue_label, game.deliveries_label]: counter.add_theme_font_override("font", game.header_font)
 	for i in 3:
-		var caption: Label = game._label(Vector2(60 + i * 158, 51), Vector2(90, 19), 16, Color("fff0d1"))
+		var caption: Label = game._label(Vector2(60 + i * 158, 51), Vector2(90, 19), 14, Color("fff0d1"))
 		caption.text = ["KASA", "CİRO", "TESLİMAT"][i]
 		caption.add_theme_font_override("font", game.header_font)
 
@@ -49,11 +51,11 @@ func refresh() -> void:
 	game.revenue_label.text = "%s ₺" % game.Numbers.compact(game.total_earned)
 	game.money_label.tooltip_text = game.Numbers.exact(game.money) + " ₺"
 	game.revenue_label.tooltip_text = game.Numbers.exact(game.total_earned) + " ₺"
-	game.deliveries_label.tooltip_text = game.Numbers.exact(game.deliveries)
+	game.deliveries_label.tooltip_text = game.Numbers.exact(game.deliveries + game.dispatch.completed if game.simulation_economy_version >= 6 else game.deliveries) + " • Bu tur"
 	game.deliveries_label.text = "%s" % game.Numbers.compact(game.deliveries + game.dispatch.completed if game.simulation_economy_version >= 6 else game.deliveries)
 	for counter in [game.money_label, game.revenue_label, game.deliveries_label]:
 		var font: Font = counter.get_theme_font("font")
-		var font_size := 24
+		var font_size := 20
 		while font_size > 12 and font.get_string_size(counter.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > counter.size.x:
 			font_size -= 1
 		counter.add_theme_font_size_override("font_size", font_size)

@@ -1,0 +1,166 @@
+{
+	"checks": [
+		{
+			"name": "settings_elapsed_with_and_without_toggle",
+			"reproduced": true,
+			"with_toggle_cash": 0,
+			"without_toggle_cash": 85
+		},
+		{
+			"choices": [
+				{
+					"kind": "district",
+					"name": "Açık ilçeleri karşılaştır"
+				},
+				{
+					"kind": "district",
+					"name": "İlçe hedefini incele"
+				},
+				{
+					"kind": "guide",
+					"name": "Yatırım rehberini aç"
+				}
+			],
+			"name": "duplicate_return_recommendations"
+		},
+		{
+			"name": "guide_copy",
+			"text": "Şirket bölümünden filonu büyüt. Geliştir bölümünde hizmet ve prim, Motivasyon bölümünde konfor yatırımı seç. Teslimatlar ve kasa otomatik ilerler."
+		},
+		{
+			"cash": 469,
+			"deliveries": 22,
+			"name": "ten_minutes_simulated_no_investment",
+			"note": "synthetic, not real-time play",
+			"queue": 8,
+			"stars": 0
+		},
+		{
+			"cash_after": 469,
+			"cash_before": 469,
+			"identity_preserved": true,
+			"name": "restart"
+		}
+	],
+	"label_overflow": [],
+	"method": "scene-level automation; native Computer Use unavailable",
+	"small_targets": [
+		{
+			"screen": "tab4-800",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab0-800",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab1-800",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab2-800",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab5-800",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "guide-800",
+			"size": [
+				414.0,
+				32.0
+			],
+			"text": "ANLADIM • OYUNA DÖN",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab4-1040",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab0-1040",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab1-1040",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab2-1040",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "tab5-1040",
+			"size": [
+				42.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		},
+		{
+			"screen": "guide-1040",
+			"size": [
+				414.0,
+				32.0
+			],
+			"text": "ANLADIM • OYUNA DÖN",
+			"tooltip": ""
+		},
+		{
+			"screen": "creation",
+			"size": [
+				40.0,
+				38.0
+			],
+			"text": "×",
+			"tooltip": ""
+		}
+	]
+}
