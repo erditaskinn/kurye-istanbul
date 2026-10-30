@@ -1,6 +1,8 @@
 extends Control
 const Specialization = preload("res://scripts/specialization.gd")
 const Achievements = preload("res://scripts/achievements.gd")
+var district_tip_seen := false
+var claim_in_progress := false
 var lifetime_deliveries := 0
 var achievement_claimed: Array[String] = []
 var motivation_stars := 0
@@ -291,7 +293,26 @@ var location_name_label: Label
 var location_role_label: Label
 var location_icon: TextureRect
 
+func _safe_layout(area: Rect2) -> void:
+	if area.size.x <= 0 or area.size.y <= 0: return
+	set_anchors_preset(Control.PRESET_TOP_LEFT)
+	var factor := minf(1.0, area.size.x / 480.0)
+	position = area.position
+	scale = Vector2(factor, factor)
+	size = area.size / factor
+
+func _refresh_safe_area() -> void:
+	if not OS.has_feature("android"): return
+	var display_size := Vector2(DisplayServer.screen_get_size())
+	var safe := Rect2(DisplayServer.get_display_safe_area())
+	var view_size := get_viewport_rect().size
+	if display_size.x <= 0 or display_size.y <= 0 or not safe.has_area(): return
+	var ratio := view_size / display_size
+	_safe_layout(Rect2(safe.position * ratio, safe.size * ratio))
+
 func _ready() -> void:
+	_refresh_safe_area()
+	get_viewport().size_changed.connect(_refresh_safe_area)
 	map_view = StaticMapView.new(self)
 	get_tree().quit_on_go_back = false
 	if OS.has_feature("mobile"):
@@ -475,7 +496,7 @@ func _build_menus() -> void:
 	menu_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu_subtitle.add_theme_constant_override("outline_size", 4)
 	menu_subtitle.add_theme_color_override("font_outline_color", Color("061b2c"))
-	menu_subtitle.text = "Şile'den başla, teslimat yap, kurye şirketini büyüt."
+	menu_subtitle.text = "Şile'den başla; ekibin teslimat yapsın, şirketin büyüsün."
 	menu_start_button = _button(Vector2.ZERO, Vector2(360, 58), _start_playing, menu_overlay)
 	_primary_button(menu_start_button)
 	menu_start_button.text = "DEVAM ET" if has_started else "OYUNA BAŞLA"
@@ -618,6 +639,7 @@ func _reset_progress() -> void:
 	unlocked_district_index = 0
 	district_selection = 0
 	_build_roads()
+	district_tip_seen = false
 	lifetime_deliveries = 0
 	achievement_claimed.clear()
 	motivation_stars = 0
@@ -696,7 +718,7 @@ func _build_district_panel() -> void:
 	district_bonus_label = _label(Vector2(16, 497), Vector2(416, 24), 13, Color("ffcf71"), district_panel)
 	rebirth_button = _button(Vector2(16, 526), Vector2(416, 42), _confirm_rebirth, district_panel)
 	rebirth_button.add_theme_font_size_override("font_size", 13)
-	_label(Vector2(16, 575), Vector2(416, 24), 11, Color("a6b9c5"), district_panel).text = "Yeni turda işletme sıfırlanır; toplam ciro ve albüm kalır."
+	_label(Vector2(16, 575), Vector2(416, 24), 11, Color("a6b9c5"), district_panel).text = "Yeni turu onaylamadan önce nelerin korunacağını görürsün."
 	_build_album()
 	district_panel.visible = false
 	rebirth_dialog = ConfirmationDialog.new()
@@ -1168,9 +1190,9 @@ func _refresh_prestige_preview() -> void:
 	var after := int(job["paid"])
 	var requirement := "HAZIR • +1 itibar kazanabilirsin"
 	if not _rebirth_ready():
-		requirement = "Beyoğlu açık + %s ₺ tur cirosu gerekli.\nTur: %s ₺ • Kalan: %s ₺" % [Numbers.compact(run_prestige_target), Numbers.compact(run_earned), Numbers.compact(maxi(0, run_prestige_target - run_earned))]
+		requirement = "Beyoğlu’nu aç ve bu tur %s ₺ kazan.\nTur: %s ₺ • Kalan: %s ₺" % [Numbers.compact(run_prestige_target), Numbers.compact(run_earned), Numbers.compact(maxi(0, run_prestige_target - run_earned))]
 	if not save_store.writable: requirement = "Kayıt yazılamıyor; yeni tur başlatılamaz."
-	rebirth_dialog.dialog_text = "İSTANBUL İTİBARI  %d → %d\nKALICI KAZANÇ  +%d%% → +%d%%\n\nAynı Şile işi: %s → %s ₺\nYaya, hizmet 0; her tur +25 yüzde puan.\n\nYENİDEN KURULUR\nKasa, filo ve tur içi yükseltmeler.\nBekleyen işler yeni tura taşınmaz.\n\nKORUNUR\nŞirket adı/logosu, itibar ve rehber.\nMotivasyon seviyesi ve yıldızlar.\nYeni tur ödülü: +10 yıldız.\nToplam ciro: %s ₺ • Albüm: %d/7\n\nYeni tur: Şile • 1 yaya • 60 ₺\nBaşlangıç sermayesi ciro sayılmaz.\n\n%s" % [rebirth_count, rebirth_count + 1, rebirth_count * 25, (rebirth_count + 1) * 25, Numbers.compact(before), Numbers.compact(after), Numbers.compact(total_earned), album_unlocked.size(), requirement]
+	rebirth_dialog.dialog_text = "İSTANBUL İTİBARI  %d → %d\nKALICI KAZANÇ  +%d%% → +%d%%\n\nAynı Şile işi: %s → %s ₺\nYaya, hizmet 0; kazanç yeni turda artar.\n\nYENİ TURDA SIFIRLANIR\nKasa, filo ve tur içi yükseltmeler.\nBekleyen işler yeni tura taşınmaz.\n\nKORUNUR\nŞirket adı/logosu, itibar ve rehber.\nMotivasyon seviyesi ve yıldızlar.\nYeni tur ödülü: +10 yıldız.\nToplam kazanç: %s ₺ • Albüm: %d/7\n\nYeni tur: Şile • 1 yaya • 60 ₺\nBu 60 ₺, tur kazancına eklenmez.\n\n%s" % [rebirth_count, rebirth_count + 1, rebirth_count * 25, (rebirth_count + 1) * 25, Numbers.compact(before), Numbers.compact(after), Numbers.compact(total_earned), album_unlocked.size(), requirement]
 	rebirth_dialog.dialog_text += "\n\nYeni tur modeli: " + Specialization.TITLES[specialization_choice.selected] + "\n" + Specialization.DETAILS[specialization_choice.selected] + "\nSonraki itibarda ücretsiz değiştirilebilir." 
 	rebirth_dialog.get_ok_button().disabled = not _rebirth_ready() or not save_store.writable
 
@@ -1342,7 +1364,7 @@ func _refresh_ui() -> void:
 	if company_ui != null: company_ui.sync()
 
 func _save_data() -> Dictionary:
-	return {"lifetime_deliveries": lifetime_deliveries, "achievement_claimed": achievement_claimed.duplicate(), "motivation_stars": motivation_stars, "motivation_level": motivation_level, "star_progress": star_progress, "specialization_id": specialization_id, "feedback_settings": {"sound": sound_enabled, "haptics": haptics_enabled}, "economy_version": Economy.VERSION, "run_prestige_target": run_prestige_target, "legacy_speed_floor": legacy_speed_floor, "company_name": company_name, "company_logo": company_logo, "brand_ready": brand_ready, "bonus_level": bonus_level, "operations_level": operations_level, "comfort_level": comfort_level, "starter_role": starter_role, "local_metrics": local_metrics.to_save(), "guide_seen": guide_seen, "service_level": service_level, "migration_notice": migration_notice, "rng_state": str(rng.state), "return_summary": return_summary, "started": has_started, "money": money, "total_earned": total_earned, "run_earned": run_earned, "district_index": district_index, "unlocked_district_index": unlocked_district_index, "album_unlocked": album_unlocked, "rebirth_count": rebirth_count, "deliveries": deliveries, "vehicle": vehicle, "company": company, "workers": workers, "staff_counts": staff_counts, "dispatch": dispatch.to_save(), "pickup_index": pickup_index, "drop_index": drop_index, "order_payout": order_payout, "carrying": carrying, "camera_center": [camera_center.x, camera_center.y], "camera_zoom": camera_zoom, "camera_follow": camera_follow, "last_saved_at": last_saved_at}
+	return {"district_tip_seen": district_tip_seen, "lifetime_deliveries": lifetime_deliveries, "achievement_claimed": achievement_claimed.duplicate(), "motivation_stars": motivation_stars, "motivation_level": motivation_level, "star_progress": star_progress, "specialization_id": specialization_id, "feedback_settings": {"sound": sound_enabled, "haptics": haptics_enabled}, "economy_version": Economy.VERSION, "run_prestige_target": run_prestige_target, "legacy_speed_floor": legacy_speed_floor, "company_name": company_name, "company_logo": company_logo, "brand_ready": brand_ready, "bonus_level": bonus_level, "operations_level": operations_level, "comfort_level": comfort_level, "starter_role": starter_role, "local_metrics": local_metrics.to_save(), "guide_seen": guide_seen, "service_level": service_level, "migration_notice": migration_notice, "rng_state": str(rng.state), "return_summary": return_summary, "started": has_started, "money": money, "total_earned": total_earned, "run_earned": run_earned, "district_index": district_index, "unlocked_district_index": unlocked_district_index, "album_unlocked": album_unlocked, "rebirth_count": rebirth_count, "deliveries": deliveries, "vehicle": vehicle, "company": company, "workers": workers, "staff_counts": staff_counts, "dispatch": dispatch.to_save(), "pickup_index": pickup_index, "drop_index": drop_index, "order_payout": order_payout, "carrying": carrying, "camera_center": [camera_center.x, camera_center.y], "camera_zoom": camera_zoom, "camera_follow": camera_follow, "last_saved_at": last_saved_at}
 
 func _save_game() -> void:
 	_settle_settings_time()
@@ -1355,6 +1377,7 @@ func _load_game() -> void:
 	var data := save_store.load_record(SAVE_PATH)
 	if data.is_empty():
 		return
+	district_tip_seen = bool(data.get("district_tip_seen", false))
 	motivation_stars = clampi(int(data.get("motivation_stars", 0)), 0, 1000000000)
 	motivation_level = clampi(int(data.get("motivation_level", 0)), 0, 20)
 	star_progress = clampi(int(data.get("star_progress", 0)), 0, 99)
@@ -1615,11 +1638,11 @@ func _show_return_summary() -> void:
 	var seconds := int(return_summary.get("seconds", 0))
 	return_time_label.text = "Hesaplanan süre: %d sa %d dk" % [seconds / 3600, (seconds % 3600) / 60]
 	if int(return_summary.get("capped", 0)) > 0:
-		return_time_label.text += "\nHer ayrılışta en fazla 4 saat kazanç hesaplanır."
+		return_time_label.text += "\nOyunu kapattığında en fazla 4 saat kazanırsın."
 	return_total_label.text = "+%s ₺" % Numbers.compact(int(return_summary.get("solo", 0)) + int(return_summary.get("team", 0)))
 	return_breakdown_label.text = "Kuryen: +%s ₺\nEkibin: +%s ₺ • %s teslimat" % [Numbers.compact(int(return_summary.get("solo", 0))), Numbers.compact(int(return_summary.get("team", 0))), Numbers.compact(int(return_summary.get("completed", 0)))]
 	if simulation_economy_version >= 6:
-		return_breakdown_label.text = "Filo: +%s ₺\nTamamlanan ekip teslimatı: %s" % [Numbers.compact(int(return_summary.get("solo", 0)) + int(return_summary.get("team", 0))), Numbers.compact(int(return_summary.get("completed", 0)))]
+		return_breakdown_label.text = "Filo: +%s ₺\nBitirilen teslimat: %s" % [Numbers.compact(int(return_summary.get("solo", 0)) + int(return_summary.get("team", 0))), Numbers.compact(int(return_summary.get("completed", 0)))]
 	return_breakdown_label.text += "\nYıldız: +%d • Sonraki: %d/100 teslimat" % [int(return_summary.get("stars", 0)), star_progress]
 	guide_panel.hide()
 	district_panel.hide()
@@ -1688,7 +1711,7 @@ func _production_snapshot(next_vehicle: int = -1, next_service: int = -1, extra_
 		mean_pay += int(round(float(base) * Economy.service_multiplier(chosen_service) * (1.0 + region * 0.25) * _motivation_multiplier() * Economy.reputation_multiplier(rebirth_count, simulation_economy_version) * (1.0 + chosen_bonus * 0.05 if simulation_economy_version >= 6 else 1.0)))
 	mean_pay /= maxf(1.0, fares.size())
 	var demand := float(Economy.DEMAND_PER_MINUTE[region])
-	var bottleneck := "Taşıma sınırlı" if capacity < demand - 0.001 else "Talep sınırlı"
+	var bottleneck := "Ek kurye gerek" if capacity < demand - 0.001 else "Tüm işlere yetişiyorsun"
 	if region == district_index and capacity >= demand and not dispatch.pending.is_empty(): bottleneck = "Kuyruk eriyor"
 	return {"capacity": capacity, "demand": demand, "mean_pay": mean_pay, "income": minf(capacity, demand) * mean_pay, "founder_seconds": founder_seconds, "bottleneck": bottleneck}
 
@@ -1716,13 +1739,13 @@ func _investment(kind: String, role: int = -1) -> Dictionary:
 
 func _investment_tooltip(investment: Dictionary) -> String:
 	var text := "Bedel: %s ₺\n" % Numbers.exact(int(investment["cost"]))
-	text += "Kuyruk dengelendiğinde beklenen katkı: ~+%s ₺/dk.\nGerçek sonuç sipariş mesafelerine göre değişir." % _rate(float(investment["gain"]))
+	text += "Yeni işler gelince beklenen ek kazanç: ~+%s ₺/dk.\nGerçek sonuç sipariş mesafelerine göre değişir." % _rate(float(investment["gain"]))
 	if float(investment["gain"]) <= 0.001:
 		text += "\nTalep sınırlı: bu alım şu anda sürekli geliri artırmaz."
 		if not dispatch.pending.is_empty():
-			text += " Birikmiş kuyruğun erimesine yardımcı olabilir."
+			text += " Bekleyen siparişleri daha hızlı bitirebilir."
 	else:
-		text += "\nYaklaşık geri ödeme: %s dk (aynı ilçe ve koşullarda)." % _rate(float(investment["payback"]))
+		text += "\nMasrafın çıkma süresi: %s dk (aynı ilçe ve koşullarda)." % _rate(float(investment["payback"]))
 	return text
 
 func _purchase_target(cost: int) -> String:
@@ -1790,13 +1813,13 @@ func _return_investments() -> Array[Dictionary]:
 
 func _refresh_return_choices() -> void:
 	var snapshot := _production_snapshot()
-	var target := "Yeni tur: %s / %s ₺ tur cirosu" % [Numbers.compact(run_earned), Numbers.compact(run_prestige_target)]
+	var target := "Yeni tur: %s / %s ₺ tur kazancı" % [Numbers.compact(run_earned), Numbers.compact(run_prestige_target)]
 	if unlocked_district_index + 1 < DISTRICTS.size():
-		target = "%s: %s / %s ₺ tur cirosu" % [DISTRICTS[unlocked_district_index + 1], Numbers.compact(run_earned), Numbers.compact(DISTRICT_THRESHOLDS[unlocked_district_index + 1])]
-	return_goal_label.text = "ŞİMDİ: %s • Kasa %s ₺\nTalep %s / kapasite %s iş/dk\nHEDEF: %s" % [snapshot["bottleneck"], Numbers.compact(money), _rate(float(snapshot["demand"])), _rate(float(snapshot["capacity"])), target]
+		target = "%s: %s / %s ₺ tur kazancı" % [DISTRICTS[unlocked_district_index + 1], Numbers.compact(run_earned), Numbers.compact(DISTRICT_THRESHOLDS[unlocked_district_index + 1])]
+	return_goal_label.text = "ŞİMDİ: %s • Kasa %s ₺\nSipariş %s / ekip %s teslimat/dk\nHEDEF: %s" % [snapshot["bottleneck"], Numbers.compact(money), _rate(float(snapshot["demand"])), _rate(float(snapshot["capacity"])), target]
 	if unlocked_district_index > district_index:
 		target = "%s açık • İlçe ekranından seç" % DISTRICTS[unlocked_district_index]
-		return_goal_label.text = "ŞİMDİ: %s • Kasa %s ₺\nTalep %s / kapasite %s iş/dk\nHEDEF: %s" % [snapshot["bottleneck"], Numbers.compact(money), _rate(float(snapshot["demand"])), _rate(float(snapshot["capacity"])), target]
+		return_goal_label.text = "ŞİMDİ: %s • Kasa %s ₺\nSipariş %s / ekip %s teslimat/dk\nHEDEF: %s" % [snapshot["bottleneck"], Numbers.compact(money), _rate(float(snapshot["demand"])), _rate(float(snapshot["capacity"])), target]
 	return_choices = _return_investments()
 	if motivation_level < 20 and motivation_stars >= _motivation_cost():
 		return_choices.push_front({"kind": "motivation", "name": "Kalıcı motivasyon: %d yıldız" % _motivation_cost()})
@@ -1818,7 +1841,7 @@ func _refresh_return_choices() -> void:
 			button.text = "%s • %s ₺ • ~+%s ₺/dk\n%s • İncele ›" % [choice["name"], Numbers.compact(int(choice["cost"])), _rate(float(choice["gain"])), _purchase_target(int(choice["cost"]))]
 			button.tooltip_text = _investment_tooltip(choice) + "\nBu düğme satın almaz; yatırım ekranına döner."
 		else:
-			button.text = "%s ›\n%s" % [choice["name"], "Yeni iş kapasitesini karşılaştır" if choice["kind"] == "district" else ("Kalıcı yüzde bonusunu incele" if choice["kind"] == "motivation" else ("Yıldız ödüllerini incele" if choice["kind"] == "achievements" else "Hız, ücret ve kapasite farkı"))]
+			button.text = "%s ›\n%s" % [choice["name"], "Hangi ilçede daha çok kazanırsın?" if choice["kind"] == "district" else ("Yeni turda da kalan kazanç artışı" if choice["kind"] == "motivation" else ("Yıldız ödüllerini incele" if choice["kind"] == "achievements" else "Hız, ücret ve kapasite farkı"))]
 			button.tooltip_text = "Bilgi ekranını aç; satın alma yapılmaz."
 
 func _open_return_choice(index: int) -> void:
@@ -1863,17 +1886,17 @@ func _refresh_district_panel() -> void:
 		district_select_buttons[i].modulate = Color("ffcf71") if i == selected else Color.WHITE
 	district_name_label.text = "%s • %s" % [DISTRICTS[selected], "ETKİN" if selected == district_index else "AÇIK" if selected <= unlocked_district_index else "KİLİTLİ"]
 	district_postcard.texture = _district_texture(selected)
-	district_comparison.text = "Mevcut → Seçili (tahmini)\nTalep %s → %s iş/dk\nYaya ~%s → %s sn\nÜcret ~%s → %s ₺/iş\nGelir ~%s → %s ₺/dk" % [_rate(float(current["demand"])), _rate(float(preview["demand"])), _rate(float(current["founder_seconds"])), _rate(float(preview["founder_seconds"])), _rate(float(current["mean_pay"])), _rate(float(preview["mean_pay"])), _rate(float(current["income"])), _rate(float(preview["income"]))]
+	district_comparison.text = "Mevcut → Seçili (tahmini)\nSipariş %s → %s /dk\nYaya ~%s → %s sn\nÜcret ~%s → %s ₺/iş\nGelir ~%s → %s ₺/dk" % [_rate(float(current["demand"])), _rate(float(preview["demand"])), _rate(float(current["founder_seconds"])), _rate(float(preview["founder_seconds"])), _rate(float(current["mean_pay"])), _rate(float(preview["mean_pay"])), _rate(float(current["income"])), _rate(float(preview["income"]))]
 	var next_goal := "Yeni tur: %s / %s ₺" % [Numbers.compact(run_earned), Numbers.compact(run_prestige_target)]
 	var threshold := run_prestige_target
 	if unlocked_district_index + 1 < DISTRICTS.size():
 		threshold = DISTRICT_THRESHOLDS[unlocked_district_index + 1]
 		next_goal = "%s açılışı: %s / %s ₺" % [DISTRICTS[unlocked_district_index + 1], Numbers.compact(run_earned), Numbers.compact(threshold)]
-	district_progress_label.text = "%s • %s\n%s tur cirosu" % [DISTRICT_IDENTITIES[selected], preview["bottleneck"], next_goal]
+	district_progress_label.text = "%s • %s\n%s tur kazancı" % [DISTRICT_IDENTITIES[selected], preview["bottleneck"], next_goal]
 	district_progress_bar.max_value = threshold
 	district_progress_bar.value = run_earned
 	district_activate_button.disabled = selected > unlocked_district_index or selected == district_index
-	district_activate_button.text = "BURADA ÇALIŞIYORSUN" if selected == district_index else "AÇILIŞ İÇİN %s ₺ TUR CİROSU" % Numbers.compact(DISTRICT_THRESHOLDS[selected]) if selected > unlocked_district_index else "%s İLÇESİNDE ÇALIŞ" % DISTRICTS[selected].to_upper()
+	district_activate_button.text = "BURADA ÇALIŞIYORSUN" if selected == district_index else "AÇILIŞ İÇİN %s ₺ TUR KAZANCI" % Numbers.compact(DISTRICT_THRESHOLDS[selected]) if selected > unlocked_district_index else "%s İLÇESİNDE ÇALIŞ" % DISTRICTS[selected].to_upper()
 	district_activate_button.tooltip_text = "Eski işler ücret ve sürelerini korur. Yeni siparişler seçili ilçeden gelir. Tahmin birikmiş kuyruğu içermez."
 	album_button.text = "İSTANBUL ALBÜMÜ • %d / 7 KARTPOSTAL ›" % album_unlocked.size()
 	for i in album_images.size():
@@ -1962,6 +1985,15 @@ func _focus_job() -> Dictionary:
 	return dispatch.active[0] if not dispatch.active.is_empty() else {}
 
 func _claim_achievement(id: String) -> void:
+	if claim_in_progress: return
+	claim_in_progress = true
+	if company_ui != null and company_ui.achievement_rows.has(id):
+		company_ui.achievement_rows[id]["button"].disabled = true
+	_commit_achievement(id)
+	claim_in_progress = false
+	if company_ui != null: company_ui.sync()
+
+func _commit_achievement(id: String) -> void:
 	if achievement_claimed.has(id) or not save_store.writable: return
 	for item in Achievements.ITEMS:
 		if str(item[0]) != id or Achievements.progress(self, item) < int(item[3]): continue
@@ -2078,7 +2110,7 @@ func _toggle_guide() -> void:
 func _refresh_guide() -> void:
 	if simulation_economy_version >= 6:
 		guide_title.text = "ŞİRKET YÖNETİMİ"
-		guide_body.text = "Filo: kurye ekle. Geliştir: hizmet, prim ve konfor. Motivasyon: yıldızla kalıcı kazanç. Şirket: operasyon, ilçeler ve başarımlar. Teslimatlar otomatik ilerler."
-		guide_goal.text = "Talep ve kapasiteyi karşılaştır; gösterilen ₺/sn tahmini ortalamadır."
+		guide_body.text = "Kuryelerin kendiliğinden teslimat yapar. Filo’dan kurye ekle; Geliştir’den kazancını ve hızını artır. Motivasyon’u yıldızla geliştir. Şirket’ten ilçelere ve başarım ödüllerine bak."
+		guide_goal.text = "Sipariş sayısı ekibinden fazlaysa kurye ekle. ₺/sn yaklaşık kazançtır."
 		return
 

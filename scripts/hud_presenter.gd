@@ -34,7 +34,7 @@ func build() -> void:
 	for counter in [game.money_label, game.revenue_label, game.deliveries_label]: counter.add_theme_font_override("font", game.header_font)
 	for i in 3:
 		var caption: Label = game._label(Vector2(60 + i * 158, 51), Vector2(90, 19), 14, Color("fff0d1"))
-		caption.text = ["KASA", "CİRO", "TESLİMAT"][i]
+		caption.text = ["KASA", "KAZANÇ", "TESLİMAT"][i]
 		caption.add_theme_font_override("font", game.header_font)
 
 func refresh() -> void:
@@ -50,7 +50,7 @@ func refresh() -> void:
 	game.money_label.text = "%s ₺" % game.Numbers.compact(game.money)
 	game.revenue_label.text = "%s ₺" % game.Numbers.compact(game.total_earned)
 	game.money_label.tooltip_text = game.Numbers.exact(game.money) + " ₺"
-	game.revenue_label.tooltip_text = game.Numbers.exact(game.total_earned) + " ₺"
+	game.revenue_label.tooltip_text = game.Numbers.exact(game.total_earned) + " ₺ • Tüm teslimatlardan kazandığın para; harcadıkların da dahil."
 	game.deliveries_label.tooltip_text = game.Numbers.exact(game.deliveries + game.dispatch.completed if game.simulation_economy_version >= 6 else game.deliveries) + " • Bu tur"
 	game.deliveries_label.text = "%s" % game.Numbers.compact(game.deliveries + game.dispatch.completed if game.simulation_economy_version >= 6 else game.deliveries)
 	for counter in [game.money_label, game.revenue_label, game.deliveries_label]:

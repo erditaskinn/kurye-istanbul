@@ -15,7 +15,7 @@ func build(owner_game: Control) -> void:
 	add_child(body)
 	game._label(Vector2(8, 4), Vector2(392, 28), 21, Color("ffcf71"), body).text = "YENİ TURUN ÇALIŞMA MODELİ"
 	var note: Label = game._label(Vector2(8, 34), Vector2(392, 38), 12, Color("b1c9c9"), body)
-	note.text = "Bir model seç. Sonraki itibarda ücretsiz değiştir.\nSeçmek turu başlatmaz; son onay ayrı ekranda."
+	note.text = "Yeni turda hangi ekibin hızlanacağını seç.\nSeçtikten sonra onay ekranına döneceksin."
 	for index in 4:
 		var panel: Panel = game.FRAMED_PANEL.instantiate()
 		panel.position = Vector2(4, 82 + index * 106); panel.size = Vector2(400, 100); body.add_child(panel)
@@ -29,7 +29,7 @@ func build(owner_game: Control) -> void:
 		game._label(Vector2(68, 7), Vector2(226, 24), 17, Color("ffcf71"), panel).text = game.Specialization.TITLES[index]
 		var detail: Label = game._label(Vector2(68, 34), Vector2(230, 56), 12, Color("d7e4dd"), panel)
 		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		detail.text = game.Specialization.DETAILS[index] + "\n" + ["Önceki düzen; ek rol bonusu yok.", "Hafif filo ve konfor odaklı.", "Motor ve operasyon odaklı.", "Yoğun ilçelerde araba odaklı."][index]
+		detail.text = game.Specialization.DETAILS[index] + "\n" + ["Ekibinde bir değişiklik olmaz.", "Yaya ve bisiklet ağırlıklı ekipler için.", "Motor ağırlıklı ekipler için.", "Araba ağırlıklı ekipler için."][index]
 		var button: Button = game._button(Vector2(306, 24), Vector2(84, 48), choose.bind(index), panel)
 		button.add_theme_font_size_override("font_size", 13); rows.append(button)
 func open() -> void:

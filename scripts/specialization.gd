@@ -1,7 +1,7 @@
 extends RefCounted
 const IDS := ["standard", "neighborhood", "express", "distribution"]
 const TITLES := ["Standart Şirket", "Mahalle Ağı", "Ekspres Hat", "Dağıtım Merkezi"]
-const DETAILS := ["Ek hız bonusu yok; mevcut şirket modeli.", "Yaya ve bisiklet hızı +%35. Diğer roller aynı.", "Motor hızı +%35. Diğer roller aynı.", "Araba hızı +%40. Diğer roller aynı."]
+const DETAILS := ["Ek hız vermez. Normal şirket düzeni.", "Yaya ve bisikletliler %35 hızlanır.", "Motorlu kuryeler %35 hızlanır.", "Arabalı kuryeler %40 hızlanır."]
 
 static func valid(value: Variant) -> String:
 	return str(value) if str(value) in IDS else "standard"

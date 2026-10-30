@@ -1,5 +1,12 @@
 # İstanbul Kurye — Geliştirme yol haritası
 
+## En son kontrol noktası — 0.29 mobil iyileştirmeler
+Nihai:14betiktemiz geçti, APK0.29.0-mobile-polish/code29hazır; imza/hizalama geçti. Bu sürüm telefona yüklenmedi. Önceki “beklenir/hazırlanır” ifadesi aşağıda işlem kronolojisidir. Kullanıcı kontrolü için DUR.
+Kullanıcı seçilen beşmaddeyi yetkilendirdi. Güvenlialan/ödülkilidi/ilkBeykozipucu/saat-arka plan testleri/aktifsekmevurgusu uygulandı. docs/mobile-polish-0.29.md güncel kapsam ve sınırlar. Yeni mobile_polish betiği geçti; kapı14betik. APKcode29hazırlanır, toplutest sonucu beklenir. Ekonomi/şema11aynı. Telefon/GitHub/ComputerUseişlemi yapılmadı; kullanıcı kontrolü için durulacak.
+
+## En son kontrol noktası — 0.28 açıklama sadeleştirme
+Kullanıcı oyuniçi açıklamaları daha kolay anlaşılır istedi. Sipariş/ekip/kazanç/tur hedefi/yıldız/kalıcılık/yeni iş etkisi dilinde sadeleştirme uygulandı; docs/clear-text-0.28.md. Ekonomi ve kayıt değişmedi.13betik bu tur temiz geçti; son metinler için yatırım/yerleşim/ilerleme yeniden kontrol edildi. Ekranlar iki oranda yakalandı. ComputerUseyeniden denenmedi; önceki sandboxbaşlangıçhatası açık.0.28APK hazırlanır; telefon/GitHub güncellemesi yapılmadı. Kullanıcı kontrolü için DUR.
+
 ## En son kontrol noktası — 0.27.0-readability / yeniden başlatma bekleniyor
 Kullanıcı test raporu düzeltmeleri ve anlaşılır font istedi. Ayar-zaman kaybı, rehber, tooltip, tekraröneri,44pxkapatma, yıldız/ödül/hedefgörünürlüğü ve okunaklıHUD uygulandı. docs/readability-0.27.md güncel kanıt/sınırlar.12betiktemiz; sesbetiği davranışkontrolleri geçiyor fakat WAVkapanışkaynağı uyarısı strictkapıyı durduruyor, açıkteknikiş. APKcode27hazır; telefon/GitHub'a gönderilmedi. Kullanıcı yenidenbaşlatacak; “açtım” sonrası ComputerUsebağlantısını yeniden kontrol et. Şimdi ComputerUse'ı tekrar deneme. Gerçekoyuncu testi henüz yapılamadı; kod/ekran testini onun yerine yapılmış sayma.
 

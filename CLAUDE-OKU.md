@@ -1,3 +1,3 @@
-# İnceleme başlangıcı
+# Claude incelemesi
 
-Güncel sürüm **0.27.0-readability**. Claude, Gemini ve diğer inceleyiciler önce [INCELEME-OKU.md](INCELEME-OKU.md) dosyasını okumalıdır. Eski0.25/0.26belgeleri tarihsel olabilir.
+Güncel sürüm **0.29.0-mobile-polish**. Önce [INCELEME-OKU.md](INCELEME-OKU.md), docs/mobile-polish-0.29.md ve docs/clear-text-0.28.md dosyalarını oku. Yeni görüntüler docs/screenshots/mobile-polish-0.29/ içinde. Kısa rapor: en önemli5bulgu; her biri önem/kanıt/öneri. Görsel ve teknik gözlemleri ayır. Kod değiştirme.

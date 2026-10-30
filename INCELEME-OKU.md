@@ -1,6 +1,14 @@
 # İstanbul Kurye — güncel inceleme girişi
 
-30 Ekim 2026. Güncel kaynak/APK: **0.27.0-readability / code27**, kayıt şeması11 / ekonomi7. Godot4.6.3, Android portre, Compatibility renderer. Telefona en son0.25kuruldu;0.27APK yerelde hazır, depoyaAPKeklenmedi.
+30 Ekim 2026. Güncel kaynak/APK: **0.29.0-mobile-polish / code29**, kayıt şeması11 / ekonomi7. Godot4.6.3, Android portre, Compatibility renderer. Telefona en son0.28kuruldu;0.29APK yerelde hazır, depoyaAPKeklenmedi.
+
+## Güncel yama
+
+Önce docs/mobile-polish-0.29.md ve docs/clear-text-0.28.md oku. Yeni görüntüler docs/screenshots/mobile-polish-0.29/ altında. 0.29 güvenli alan, ödül sırasında kilit, ilk ilçe ipucu ve aktif sekme vurgusunu ekler; 0.28 açıklamaları sadeleştirir. Şema11/ekonomi7 ve önceki sayısal denge aynı.
+
+Son strict kabul koşusunda14betik temiz geçti. Önceden aralıklı görülen WAVkapanışuyarısı son koşuda yoktu; kalıcı çözüldüğü iddia edilmiyor. Fiziksel çentikli telefonda güvenli alan, ses/titreşim ve gerçek oyuncu testi henüz tamamlanmadı. Saat testleri4saattavan/geriyealış/aynısürenintekrarı içindir; sunucu saati yok ve tekrarlı saatilerialma hilesine tam koruma iddiası yok.
+
+Aşağıdaki0.27notları tarihsel bağlamdır; yeni yama notları önceliklidir.
 
 ## Önce oku
 

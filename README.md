@@ -1,3 +1,5 @@
+> **Güncel sürüm: 0.29.0-mobile-polish / code29.** [İnceleme girişi](INCELEME-OKU.md) · [Yama notları](docs/mobile-polish-0.29.md) · [Güncel ekranlar](docs/screenshots/mobile-polish-0.29/). Eski sürüm notları aşağıda tarihsel olarak korunur.
+
 > **Güncel: 0.27.0-readability / code27.** İncelemeye [INCELEME-OKU.md](INCELEME-OKU.md) ile başlayın. [Son ekranlar](docs/screenshots/readability-0.27/). Aşağıdaki eski sürüm notları tarihseldir.
 
 > Güncel yerel kaynak: **0.26.0-progression**, şema11. [Tamamlanan geliştirmeler](docs/progression-0.26.md) ve [yeni ekranlar](docs/screenshots/progression-0.26/) önce okunmalıdır. Önceki sürüm notları tarihseldir.
