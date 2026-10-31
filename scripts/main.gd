@@ -300,6 +300,15 @@ func _safe_layout(area: Rect2) -> void:
 	position = area.position
 	scale = Vector2(factor, factor)
 	size = area.size / factor
+	_refresh_readable_text(self)
+
+func _text_size(base: int) -> int:
+	return int(ceil(maxi(14, base) / maxf(0.5, scale.x)))
+
+func _refresh_readable_text(node: Node) -> void:
+	if node is Control and node.has_meta("base_text_size"):
+		node.add_theme_font_size_override("font_size", _text_size(int(node.get_meta("base_text_size"))))
+	for child in node.get_children(): _refresh_readable_text(child)
 
 func _refresh_safe_area() -> void:
 	if not OS.has_feature("android"): return
@@ -508,7 +517,7 @@ func _build_menus() -> void:
 	settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(settings_overlay)
 	settings_panel = FRAMED_PANEL.instantiate()
-	settings_panel.size = Vector2(420, 408)
+	settings_panel.size = Vector2(420, 440)
 	settings_overlay.add_child(settings_panel)
 	_label(Vector2(22, 19), Vector2(315, 38), 24, Color("f9b553"), settings_panel).text = "AYARLAR"
 	_button(Vector2(356, 16), Vector2(44, 44), _close_settings, settings_panel).text = "X"
@@ -517,12 +526,12 @@ func _build_menus() -> void:
 	_refresh_feedback_buttons()
 	_label(Vector2(22, 182), Vector2(376, 30), 12, Color("b1c9c9"), settings_panel).text = "Kısa, kısık efektler. Titreşim yalnız alım/açılışta."
 	_label(Vector2(22, 216), Vector2(376, 20), 11, Color("70dfcf"), settings_panel).text = "K: bin • M: milyon • B: milyar • T: trilyon"
-	_label(Vector2(22, 244), Vector2(376, 32), 13, Color("d9e6dc"), settings_panel).text = "Sıfırlama şirket ve ilerlemeyi başa alır.\nSes ve titreşim tercihin korunur."
-	var reset_button := _button(Vector2(22, 282), Vector2(376, 44), _request_reset, settings_panel)
+	_label(Vector2(22, 244), Vector2(376, 52), 13, Color("d9e6dc"), settings_panel).text = "Sıfırlama şirket ve ilerlemeyi başa alır.\nSes ve titreşim tercihin korunur."
+	var reset_button := _button(Vector2(22, 310), Vector2(376, 44), _request_reset, settings_panel)
 	reset_button.text = "OYUNU SIFIRLA"
 	reset_button.add_theme_stylebox_override("normal", _button_style(Color("713b3d"), Color("d4816e")))
-	_button(Vector2(22, 342), Vector2(182, 46), _close_settings, settings_panel).text = "GERİ DÖN"
-	_button(Vector2(216, 342), Vector2(182, 46), _back_to_menu, settings_panel).text = "ANA MENÜ"
+	_button(Vector2(22, 374), Vector2(182, 46), _close_settings, settings_panel).text = "GERİ DÖN"
+	_button(Vector2(216, 374), Vector2(182, 46), _back_to_menu, settings_panel).text = "ANA MENÜ"
 	settings_overlay.visible = false
 	reset_dialog = ConfirmationDialog.new()
 	reset_dialog.title = "Oyunu Sıfırla"
@@ -757,7 +766,8 @@ func _label(pos: Vector2, size: Vector2, font_size: int, color: Color, parent: C
 	var label := Label.new()
 	label.position = pos
 	label.size = size
-	label.add_theme_font_size_override("font_size", font_size)
+	label.set_meta("base_text_size", font_size)
+	label.add_theme_font_size_override("font_size", _text_size(font_size))
 	label.add_theme_color_override("font_color", color)
 	if parent == null:
 		add_child(label)
@@ -769,7 +779,8 @@ func _button(pos: Vector2, size: Vector2, callback: Callable, parent: Control = 
 	var button := Button.new()
 	button.position = pos
 	button.size = size
-	button.add_theme_font_size_override("font_size", 16)
+	button.set_meta("base_text_size", 16)
+	button.add_theme_font_size_override("font_size", _text_size(16))
 	button.pressed.connect(callback)
 	if parent == null:
 		add_child(button)
@@ -2015,7 +2026,7 @@ func _motivation_multiplier() -> float:
 	return 1.0 + motivation_level * 0.20
 
 func _motivation_cost() -> int:
-	return int(ceil(10.0 * pow(1.45, motivation_level)))
+	return 3 if motivation_level == 0 else int(ceil(10.0 * pow(1.45, motivation_level)))
 
 func _buy_motivation() -> void:
 	if motivation_level >= 20 or motivation_stars < _motivation_cost() or not save_store.writable: return

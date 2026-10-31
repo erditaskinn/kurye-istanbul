@@ -5,6 +5,11 @@ const NAV_ART = preload("res://assets/ui/navigation/nav-icons-v1.png")
 const NAV_NAMES := ["Filo", "Geliştir", "Ekip Motivasyonu", "Şirket", "Ayarlar"]
 const NAV_TABS := [4, 0, 1, 2, 3]
 const FLEET_ART = preload("res://assets/ui/navigation/fleet-v1.png")
+var comparison_buttons: Dictionary = {}
+var fleet_ribbon: Panel
+var fleet_counts: Array[Label] = []
+var company_progress: Label
+var requested_tab := -1
 var district_tip: Panel
 var reward_badge: Label
 var motivation_hint: Button
@@ -47,7 +52,7 @@ func _ready() -> void:
 	emblem.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(emblem)
 	for i in 5:
-		var b: Button = game._button(Vector2.ZERO, Vector2(120, 56), open_tab.bind(NAV_TABS[i]), self)
+		var b: Button = game._button(Vector2.ZERO, Vector2(120, 56), _request_tab.bind(NAV_TABS[i]), self)
 		for row in 2:
 			var tile := AtlasTexture.new()
 			tile.atlas = FLEET_ART if i == 0 else NAV_ART
@@ -101,6 +106,7 @@ func _ready() -> void:
 	game._button(Vector2(12, 56), Vector2(266, 44), _first_district.bind(true), district_tip).text = "İLÇELERİ GÖR"
 	game._button(Vector2(290, 56), Vector2(144, 44), _first_district.bind(false), district_tip).text = "DAHA SONRA"
 	district_tip.hide()
+	_build_fleet_ribbon()
 	_build_creation()
 	game.resized.connect(layout)
 	layout()
@@ -109,6 +115,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	visible = creation.visible or (not game.menu_overlay.visible and not game.settings_overlay.visible and not game.return_overlay.visible)
 	for node in nav + [income, activity, emblem]: node.visible = not creation.visible
+	fleet_ribbon.visible = game.has_started and not creation.visible and not sheet.visible and not game.district_panel.visible and not district_tip.visible
 	district_tip.visible = game.has_started and game.unlocked_district_index >= 1 and not game.district_tip_seen and not blocks_map() and game._map_actions_allowed()
 
 func layout() -> void:
@@ -163,6 +170,55 @@ func _refresh_nav() -> void:
 func blocks_map() -> bool:
 	return sheet.visible or creation.visible
 
+# Input callbacks finish before the clicked control is removed from the tree.
+func _request_tab(index: int) -> void:
+	requested_tab = index
+	call_deferred("_flush_tab_request")
+
+func _flush_tab_request() -> void:
+	if requested_tab < 0: return
+	var index := requested_tab
+	requested_tab = -1
+	open_tab(index)
+
+func _build_fleet_ribbon() -> void:
+	fleet_ribbon = game.FRAMED_PANEL.instantiate()
+	fleet_ribbon.position = Vector2(12, game.MAP_TOP + 8)
+	fleet_ribbon.size = Vector2(456, 38)
+	fleet_ribbon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fleet_ribbon)
+	for i in 4:
+		var portrait := AtlasTexture.new()
+		portrait.atlas = game.STAFF_PORTRAITS
+		portrait.region = game.STAFF_PORTRAIT_REGIONS[i]
+		_art(portrait, Vector2(8 + i * 53, 3), Vector2(28, 30), fleet_ribbon)
+		fleet_counts.append(game._label(Vector2(35 + i * 53, 7), Vector2(25, 24), 14, Color("70dfcf"), fleet_ribbon))
+	company_progress = game._label(Vector2(228, 7), Vector2(220, 24), 14, Color("ffcf71"), fleet_ribbon)
+
+func _build_comparison() -> void:
+	var keys: Array = cards.keys()
+	var width := 400.0 / keys.size()
+	for i in keys.size():
+		var key: String = keys[i]
+		var button: Button = game._button(Vector2(2 + i * width, 66), Vector2(width - 4, 80), _focus_card.bind(key), content)
+		button.set_meta("base_text_size", 14)
+		button.add_theme_font_size_override("font_size", game._text_size(14))
+		button.tooltip_text = "Ayrıntıları gör; bu düğme satın almaz."
+		comparison_buttons[key] = button
+
+func _focus_card(key: String) -> void:
+	if cards.has(key): sheet_scroll.scroll_vertical = int(cards[key]["panel"].position.y)
+
+func _achievement_order() -> Array:
+	var ready: Array = []
+	var pending: Array = []
+	var claimed: Array = []
+	for item in game.Achievements.ITEMS:
+		if game.achievement_claimed.has(item[0]): claimed.append(item)
+		elif game.Achievements.progress(game, item) >= int(item[3]): ready.append(item)
+		else: pending.append(item)
+	return ready + pending + claimed
+
 func open_tab(index: int) -> void:
 	if index == 3:
 		close_all()
@@ -182,6 +238,7 @@ func open_tab(index: int) -> void:
 		content.remove_child(child)
 		child.queue_free()
 	cards.clear()
+	comparison_buttons.clear()
 	achievement_rows.clear()
 	sheet_title.text = ["GELİŞTİR", "EKİP MOTİVASYONU", "ŞİRKET", "AYARLAR", "FİLO", "BAŞARIMLAR"][index]
 	flow_note = game._label(Vector2(8, 0), Vector2(392, 58), 12, Color("b1c9c9"), content)
@@ -190,10 +247,11 @@ func open_tab(index: int) -> void:
 		_card("service", 66, "Hizmet Kalitesi", "", game._buy_service)
 		_card("bonus", 254, "Teslimat Primi", "", game._buy_company_upgrade.bind("bonus"))
 		_card("comfort", 442, "Çalışma Konforu", "", game._buy_company_upgrade.bind("comfort"))
-		_note(630, "Hizmet ve prim, yeni teslimatlardan daha çok para kazandırır. Konfor, özellikle yaya ve bisikletli ekibi hızlandırır. Gelir tahminleri aynı ilçe içindir. Bekleyen işler eski ücretle biter; bu bekleme, masrafın çıkma süresine dahil değildir.")
-		content.custom_minimum_size.y = 760
+		_note(1044, "Hizmet ve prim, yeni teslimatlardan daha çok para kazandırır. Konfor, özellikle yaya ve bisikletli ekibi hızlandırır. Gelir tahminleri aynı ilçe içindir. Bekleyen işler eski ücretle biter; bu bekleme, masrafın çıkma süresine dahil değildir.")
+		content.custom_minimum_size.y = 1222
 	elif index == 1:
 		var panel: Panel = game.FRAMED_PANEL.instantiate()
+		panel.mouse_filter = Control.MOUSE_FILTER_PASS
 		panel.position = Vector2(2, 68); panel.size = Vector2(400, 80); content.add_child(panel)
 		_art(preload("res://assets/ui/progression/star.svg"), Vector2(14, 14), Vector2(54, 54), panel)
 		game._label(Vector2(90, 10), Vector2(295, 22), 14, Color("b1c9c9"), panel).text = "MOTİVASYON YILDIZI"
@@ -202,16 +260,17 @@ func open_tab(index: int) -> void:
 		motivation_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		motivation_buy = game._button(Vector2(8, 308), Vector2(390, 48), game._buy_motivation, content)
 		game._primary_button(motivation_buy)
-		motivation_hint = game._button(Vector2(8, 2), Vector2(390, 52), open_tab.bind(5), content)
+		motivation_hint = game._button(Vector2(8, 2), Vector2(390, 52), _request_tab.bind(5), content)
 		motivation_hint.add_theme_font_size_override("font_size", 13)
 		motivation_bar = _progress(Vector2(12, 272), Vector2(380, 20), content)
 		_note(376, "100 teslimatta 1 yıldız kazanırsın. Yeni tura geçince 10 yıldız daha alırsın. Başarımlardan da yıldız toplayabilirsin. Bu geliştirme yeni turlarda silinmez. Artış, yeni gelen siparişlerde başlar; bekleyenlerin ücreti değişmez.")
-		game._button(Vector2(8, 532), Vector2(390, 46), open_tab.bind(5), content).text = "BAŞARIMLARI İNCELE ›"
+		game._button(Vector2(8, 532), Vector2(390, 46), _request_tab.bind(5), content).text = "BAŞARIMLARI İNCELE ›"
 		content.custom_minimum_size.y = 598
 	elif index == 5:
 		var y := 72
-		for item in game.Achievements.ITEMS:
+		for item in _achievement_order():
 			var panel: Panel = game.FRAMED_PANEL.instantiate()
+			panel.mouse_filter = Control.MOUSE_FILTER_PASS
 			panel.position = Vector2(2, y); panel.size = Vector2(400, 150); content.add_child(panel)
 			_art(preload("res://assets/ui/progression/trophy.svg"), Vector2(12, 14), Vector2(42, 42), panel)
 			game._label(Vector2(66, 12), Vector2(320, 26), 18, Color("ffcf71"), panel).text = item[1]
@@ -225,30 +284,32 @@ func open_tab(index: int) -> void:
 		content.custom_minimum_size.y = y + 170
 	elif index == 4:
 		for i in 4: _card("fleet" + str(i), 66 + i * 188, game.STAFF_NAMES[i], "", game._hire_worker.bind(i), i)
-		_note(826, "Yeni kurye, daha çok siparişe yetişmeni sağlar. Ekibin tüm siparişleri zaten yetiştiriyorsa kurye eklemek gelirini artırmayabilir.")
-		content.custom_minimum_size.y = 990
+		_note(1338, "Yeni kurye, daha çok siparişe yetişmeni sağlar. Ekibin tüm siparişleri zaten yetiştiriyorsa kurye eklemek gelirini artırmayabilir.")
+		content.custom_minimum_size.y = 1512
 	else:
 		var brand: Label = game._label(Vector2(6, 64), Vector2(390, 26), 18, Color("ffcf71"), content)
 		brand.text = game.company_name
 		brand.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		game._button(Vector2(6, 96), Vector2(390, 44), open_creation, content).text = "ŞİRKET ADI VE LOGOSU"
 		_card("operations", 152, "Operasyon Merkezi", "", game._buy_company_upgrade.bind("operations"))
-		game._button(Vector2(6, 340), Vector2(390, 44), _districts, content).text = "İLÇELER VE İSTANBUL ALBÜMÜ ›"
-		game._button(Vector2(6, 396), Vector2(390, 44), open_tab.bind(5), content).text = "BAŞARIMLAR VE YILDIZ ÖDÜLLERİ ›"
-		_note(456, ("Uzmanlık: " + game.Specialization.TITLES[game.Specialization.IDS.find(game.specialization_id)] + ". Sonraki itibarda ücretsiz seçim. " if game.rebirth_count > 0 else "Uzmanlık ilk İstanbul İtibarı ile açılır. ") + "Gösterilen gelir yaklaşık değerdir. Yeni geliştirmeler, yeni siparişlerde etkili olur. Alamadığın siparişler için kasandan para kesilmez.")
-		content.custom_minimum_size.y = 630
+		game._button(Vector2(6, 446), Vector2(390, 44), _districts, content).text = "İLÇELER VE İSTANBUL ALBÜMÜ ›"
+		game._button(Vector2(6, 502), Vector2(390, 44), _request_tab.bind(5), content).text = "BAŞARIMLAR VE YILDIZ ÖDÜLLERİ ›"
+		_note(560, ("Uzmanlık: " + game.Specialization.TITLES[game.Specialization.IDS.find(game.specialization_id)] + ". Sonraki itibarda ücretsiz seçim. " if game.rebirth_count > 0 else "Uzmanlık ilk İstanbul İtibarı ile açılır. ") + "Gösterilen gelir yaklaşık değerdir. Yeni geliştirmeler, yeni siparişlerde etkili olur. Alamadığın siparişler için kasandan para kesilmez.")
+		content.custom_minimum_size.y = 740
+	if index in [0, 4]: _build_comparison()
 	sync()
 
 func _art(texture: Texture2D, position_value: Vector2, size_value: Vector2, parent: Control) -> void:
 	var image := TextureRect.new()
-	image.texture = texture; image.position = position_value; image.size = size_value
 	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.texture = texture; image.position = position_value; image.size = size_value
 	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(image)
 
 func _progress(position_value: Vector2, size_value: Vector2, parent: Control) -> ProgressBar:
 	var bar := ProgressBar.new()
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.position = position_value; bar.size = size_value; bar.show_percentage = false
 	bar.add_theme_stylebox_override("background", game._button_style(Color("031422"), Color("8c7046")))
 	var fill := StyleBoxFlat.new(); fill.bg_color = Color("70dfcf")
@@ -267,8 +328,9 @@ func _note(y: float, text: String) -> void:
 
 func _card(key: String, y: float, title: String, detail: String, action: Callable, role: int = -1) -> void:
 	var panel: Panel = game.FRAMED_PANEL.instantiate()
-	panel.position = Vector2(2, y)
-	panel.size = Vector2(400, 176)
+	panel.mouse_filter = Control.MOUSE_FILTER_PASS
+	panel.position = Vector2(2, (152 if sheet_tab == 2 else 158) + cards.size() * 292)
+	panel.size = Vector2(400, 280)
 	content.add_child(panel)
 	var left := 72 if role >= 0 else 12
 	if role >= 0:
@@ -283,23 +345,27 @@ func _card(key: String, y: float, title: String, detail: String, action: Callabl
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(portrait)
-	var heading: Label = game._label(Vector2(left, 8), Vector2(245 - left, 26), 16, Color("ffcf71"), panel)
+	var heading: Label = game._label(Vector2(left, 8), Vector2(388 - left, 28), 18, Color("ffcf71"), panel)
 	heading.text = title
-	var body: Label = game._label(Vector2(left, 40), Vector2(250 - left, 38), 13, Color("d7e4dd"), panel)
+	var body: Label = game._label(Vector2(left, 42), Vector2(388 - left, 46), 14, Color("d7e4dd"), panel)
 	body.text = detail
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var buy: Button = game._button(Vector2(264, 12), Vector2(124, 44), action, panel)
-	buy.add_theme_font_size_override("font_size", 12)
+	var buy: Button = game._button(Vector2(12, 96), Vector2(376, 48), action, panel)
+	buy.add_theme_font_size_override("font_size", game._text_size(15))
 	game._primary_button(buy)
-	var forecast: Label = game._label(Vector2(12, 82), Vector2(376, 24), 16, Color("70dfcf"), panel)
-	var payback: Label = game._label(Vector2(12, 108), Vector2(376, 21), 13, Color("fff0d1"), panel)
-	var timing: Label = game._label(Vector2(12, 134), Vector2(376, 34), 12, Color("b1c9c9"), panel)
+	var forecast: Label = game._label(Vector2(12, 154), Vector2(376, 28), 16, Color("70dfcf"), panel)
+	var payback: Label = game._label(Vector2(12, 188), Vector2(376, 26), 14, Color("fff0d1"), panel)
+	var timing: Label = game._label(Vector2(12, 220), Vector2(376, 52), 14, Color("b1c9c9"), panel)
 	timing.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	cards[key] = {"title": heading, "body": body, "buy": buy, "forecast": forecast, "payback": payback, "timing": timing}
+	cards[key] = {"panel": panel, "title": heading, "body": body, "buy": buy, "forecast": forecast, "payback": payback, "timing": timing}
 
 func sync() -> void:
 	if game.simulation_economy_version < 6: return
 	emblem.texture = LOGOS[game.company_logo]
+	for i in fleet_counts.size():
+		fleet_counts[i].text = game.Numbers.compact(game.staff_counts[i])
+		fleet_counts[i].modulate.a = 1.0 if game.staff_counts[i] > 0 else 0.45
+	company_progress.text = "Hizmet %d • Prim %d" % [game.service_level, game.bonus_level]
 	create_button.disabled = name_field.text.strip_edges().length() < 2
 	var snapshot: Dictionary = game._production_snapshot()
 	income.text = "~%s ₺ / sn" % game.Numbers.compact(float(snapshot["income"]) / 60.0, 1)
@@ -311,7 +377,7 @@ func sync() -> void:
 	reward_badge.visible = game.Achievements.available(game) > 0
 	if is_instance_valid(flow_note):
 		flow_note.visible = sheet_tab != 1
-		flow_note.text = "Sipariş: %s/dk • Ekibin yetiştirdiği: ~%s/dk\nBekleyen: %d/30 • Bu tur alınamayan: %s\nPara, teslimat bitince kasana eklenir." % [_precise(snapshot["demand"]), _precise(snapshot["capacity"]), game.dispatch.pending.size(), game.Numbers.compact(game.dispatch.missed)]
+		flow_note.text = "Sipariş %s/dk • Ekip ~%s/dk\nBekleyen %d/30 • Bu tur alınamayan: %s" % [_precise(snapshot["demand"]), _precise(snapshot["capacity"]), game.dispatch.pending.size(), game.Numbers.compact(game.dispatch.missed)]
 	if sheet_tab == 1 and is_instance_valid(motivation_body):
 		var cost: int = game._motivation_cost()
 		motivation_hint.text = "100 teslimat = 1 yıldız • İtibar = 10 yıldız\nBaşarımlardan da kazan › (%d hazır)" % game.Achievements.available(game)
@@ -323,6 +389,7 @@ func sync() -> void:
 		var relative: float = (next / current - 1.0) * 100.0
 		motivation_body.text = "SEVİYE %d / 20 • Yeni turda korunur\nToplam ek kazanç: +%d%% → +%d%%\nBu geliştirmeyle ~%%%s daha çok kazan\nSonraki yıldız: %d / 100 teslimat" % [game.motivation_level, game.motivation_level * 20, mini(20, game.motivation_level + 1) * 20, _precise(relative), game.star_progress]
 		motivation_buy.text = "TAMAMLANDI" if game.motivation_level >= 20 else ("GELİŞTİR • %d YILDIZ" % cost if game.motivation_stars >= cost else "%d YILDIZ GEREKLİ • %d EKSİK" % [cost, cost - game.motivation_stars])
+		motivation_buy.add_theme_color_override("font_disabled_color", Color("e0d6bd"))
 		motivation_buy.disabled = game.motivation_level >= 20 or game.motivation_stars < cost
 	if sheet_tab == 5:
 		flow_note.text = "Hedefleri tamamla, yıldız kazan\nHazır ödül: %d • Ödülü alınan: %d / %d\nYıldızın: %s" % [game.Achievements.available(game), game.achievement_claimed.size(), game.Achievements.ITEMS.size(), game.Numbers.compact(game.motivation_stars)]
@@ -342,9 +409,15 @@ func sync() -> void:
 		var cap: int = 2147483647 if role >= 0 else (game.Economy.MAX_SERVICE_LEVEL if kind == "service" else 20)
 		var offer: Dictionary = game._investment(kind, role)
 		var complete: bool = level >= cap
+		if comparison_buttons.has(key):
+			comparison_buttons[key].text = "%s\n%s ₺\n+%s/sn" % [game.STAFF_NAMES[role] if role >= 0 else {"service":"Hizmet", "bonus":"Prim", "comfort":"Konfor"}.get(kind, kind), game.Numbers.compact(offer["cost"]), _precise(float(offer["gain"]) / 60.0)]
+			comparison_buttons[key].modulate.a = 0.55 if complete or not str(offer.get("requirement", "")).is_empty() else 1.0
 		var requirement: String = offer.get("requirement", "")
 		c["body"].text = _effect(kind, role, level, complete)
 		c["buy"].text = ("3 ÇALIŞAN" if kind == "bonus" else "MOTOR/ARABA") if not requirement.is_empty() else ("TAMAMLANDI" if complete else "%s ₺" % game.Numbers.compact(offer["cost"]))
+		if requirement.is_empty() and not complete and game.money < int(offer["cost"]):
+			c["buy"].text += " • %s ₺ eksik" % game.Numbers.compact(int(offer["cost"]) - game.money)
+		c["buy"].add_theme_color_override("font_disabled_color", Color("e0d6bd"))
 		c["buy"].disabled = complete or not requirement.is_empty() or game.money < int(offer["cost"])
 		c["buy"].tooltip_text = "Bu yatırım tamamlandı." if complete else requirement + "\n" + game._investment_tooltip(offer)
 		var before_rate: float = float(offer["before"]["income"]) / 60.0
@@ -369,15 +442,17 @@ func _precise(value: float) -> String:
 	return ("%.2f" % value).trim_suffix("0").trim_suffix("0").trim_suffix(".").replace(".", ",")
 
 func _duration(minutes: float) -> String:
-	if minutes < 60: return "%s dk" % _precise(minutes)
-	if minutes < 1440: return "%s sa" % _precise(minutes / 60.0)
-	return "%s gün" % _precise(minutes / 1440.0)
+	var seconds := maxi(1, int(round(minutes * 60.0)))
+	if seconds < 60: return "%d sn" % seconds
+	if seconds < 3600: return "%d dk %d sn" % [seconds / 60, seconds % 60]
+	if seconds < 86400: return "%d sa %d dk" % [seconds / 3600, (seconds % 3600) / 60]
+	return "%d gün %d sa" % [seconds / 86400, (seconds % 86400) / 3600]
 
 func _effect(kind: String, role: int, level: int, complete: bool) -> String:
 	if complete: return "Seviye %d • Son seviye" % level
 	if kind == "worker":
 		var seconds: float = game._role_seconds(role)
-		return "%d → %d kurye\n%s ~%s sn/iş" % [level, level + 1, "Arabayla" if role == 3 else "Ortalama", _precise(seconds)]
+		return "%d → %d kurye\n%s ~%s sn/iş" % [level, level + 1, "Arabayla" if role == 3 else "Ortalama", str(int(round(seconds)))]
 	if game.simulation_economy_version >= 7 and kind in ["comfort", "operations"]:
 		var offer: Dictionary = game._investment(kind)
 		return "Sv.%d → %d • %s öncelikli\nEkip ~%s → %s teslimat/dk" % [level, level+1, "Yaya/bisiklet" if kind == "comfort" else "Motor/araba", _precise(offer["before"]["capacity"]), _precise(offer["after"]["capacity"])]

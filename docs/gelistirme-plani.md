@@ -1,4 +1,11 @@
+# 0.31.0 — Telefon testi düzeltmeleri (31 Ekim 2026)
+
+Dokunma geçişleri ertelendi; başarım çubukları kaydırmayı yakalamaz. Hazır ödüller ilk sırada. HUD/Ayarlar aralıkları, yatırım karşılaştırması ve kalıcı filo özeti eklendi. İlk motivasyon 3 yıldız; sonraki fiyatlar ve itibar koşulları korunuyor. Ayrıntılar: docs/phone-polish-0.31.md.
+
 # İstanbul Kurye — Geliştirme yol haritası
+
+## En son kontrol noktası — 0.30 okunaklı kartlar / telefon güncellendi
+Kullanıcı beşokunabilirlikmaddesini istedi ve telefonu bağladı. docs/readable-cards-0.30.md kapsam/kanıt/sınırlar. Daralanda metinminimumtelafisi,280pxkart/tamgenişlikfiyat/eksiktutar/kontrast/HUDboşluğu tamamlandı. Gerçek A50üzerinde kaydırma/klavye/başlıklar kontrol edildi; karttouchPASSveipucu-bildirimçakışması düzeltildi. Telefonda0.30code30yüklü; kayıtyedeklendi, ilkupdatehashaynı, oyunlog0hata. Harcama/markadeğişimi yapılmadı; doğalidleilerledi. İlk14kapıtemiz; sonkoşuda eskiWAVkapanışuyarısıtekrarvar, davranıştestlerigeçti/kalan4betikayrıtemiz. GitHubhâlâ0.29. Kullanıcı kontrolü için DUR.
 
 ## En son kontrol noktası — 0.29 mobil iyileştirmeler
 Nihai:14betiktemiz geçti, APK0.29.0-mobile-polish/code29hazır; imza/hizalama geçti. Bu sürüm telefona yüklenmedi. Önceki “beklenir/hazırlanır” ifadesi aşağıda işlem kronolojisidir. Kullanıcı kontrolü için DUR.

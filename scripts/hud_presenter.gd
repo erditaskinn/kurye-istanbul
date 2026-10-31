@@ -28,12 +28,12 @@ func build() -> void:
 		if state == "pressed": style.modulate_color = Color(0.8, 0.9, 0.9)
 		game.district_button.add_theme_stylebox_override(state, style)
 	game.district_button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	game.money_label = game._label(Vector2(60, 72), Vector2(90, 27), 24, Color("70dfcf"))
-	game.revenue_label = game._label(Vector2(218, 72), Vector2(90, 27), 24, Color("70dfcf"))
-	game.deliveries_label = game._label(Vector2(376, 72), Vector2(90, 27), 24, Color("70dfcf"))
+	game.money_label = game._label(Vector2(60, 74), Vector2(90, 26), 18, Color("70dfcf"))
+	game.revenue_label = game._label(Vector2(218, 74), Vector2(90, 26), 18, Color("70dfcf"))
+	game.deliveries_label = game._label(Vector2(376, 74), Vector2(90, 26), 18, Color("70dfcf"))
 	for counter in [game.money_label, game.revenue_label, game.deliveries_label]: counter.add_theme_font_override("font", game.header_font)
 	for i in 3:
-		var caption: Label = game._label(Vector2(60 + i * 158, 51), Vector2(90, 19), 14, Color("fff0d1"))
+		var caption: Label = game._label(Vector2(60 + i * 158, 55), Vector2(90, 18), 14, Color("fff0d1"))
 		caption.text = ["KASA", "KAZANÇ", "TESLİMAT"][i]
 		caption.add_theme_font_override("font", game.header_font)
 
@@ -55,8 +55,8 @@ func refresh() -> void:
 	game.deliveries_label.text = "%s" % game.Numbers.compact(game.deliveries + game.dispatch.completed if game.simulation_economy_version >= 6 else game.deliveries)
 	for counter in [game.money_label, game.revenue_label, game.deliveries_label]:
 		var font: Font = counter.get_theme_font("font")
-		var font_size := 20
-		while font_size > 12 and font.get_string_size(counter.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > counter.size.x:
+		var font_size: int = game._text_size(18)
+		while font_size > game._text_size(14) and font.get_string_size(counter.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > counter.size.x:
 			font_size -= 1
 		counter.add_theme_font_size_override("font_size", font_size)
 

@@ -57,10 +57,10 @@ func draw() -> void:
 		if is_target:
 			frame = (game.active_location_glow if is_shop else game.drop_location_glow) if game.last_map_animation_frame % 2 == 0 else frame
 		var box := Rect2(center - Vector2(18, 18), Vector2(36, 36))
-		game.draw_style_box(frame, box)
+		if i == game.selected_location or is_target: game.draw_style_box(frame, box)
 		if i == game.selected_location:
 			game.draw_rect(box.grow(3.0), Color("fff0d1"), false, 2.0)
 		var icon: Texture2D = game.SHOP_PIXELS[i] if is_shop else game.HOME_PIXELS[i - game.PICKUPS.size()]
-		game.draw_texture_rect(icon, Rect2(center - Vector2(16, 16), Vector2(32, 32)), false)
+		game.draw_texture_rect(icon, Rect2(center - Vector2(12, 12), Vector2(24, 24)), false)
 
 

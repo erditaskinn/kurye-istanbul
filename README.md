@@ -1,3 +1,5 @@
+> **Güncel sürüm:0.31.0-phone-polish / code31.** İncelemeye [INCELEME-OKU.md](INCELEME-OKU.md) ve [0.31 yama notları](docs/phone-polish-0.31.md) ile başlayın. [Güncel telefon ekranları](docs/screenshots/phone-polish-0.31/). İlk motivasyon3 yıldızdır;15 güncel test grubu geçmiştir.0.31 telefona yüklenmiştir. Aşağıdaki0.29 ve daha eski sürüm açıklamaları tarihsel bağlamdır; güncel ürün/test sözleşmesi olarak kullanılmamalıdır.
+
 > **Güncel sürüm: 0.29.0-mobile-polish / code29.** [İnceleme girişi](INCELEME-OKU.md) · [Yama notları](docs/mobile-polish-0.29.md) · [Güncel ekranlar](docs/screenshots/mobile-polish-0.29/). Eski sürüm notları aşağıda tarihsel olarak korunur.
 
 > **Güncel: 0.27.0-readability / code27.** İncelemeye [INCELEME-OKU.md](INCELEME-OKU.md) ile başlayın. [Son ekranlar](docs/screenshots/readability-0.27/). Aşağıdaki eski sürüm notları tarihseldir.

@@ -56,6 +56,13 @@ func run() -> void:
 				check(safe.grow(0.01).encloses(button.get_global_rect()),"Navigation overlaps notch/system bar")
 			g.company_ui.open_tab(4);await process_frame
 			check(safe.grow(0.01).encloses(g.company_ui.sheet.get_global_rect()),"Drawer escaped safe area")
+			for row in g.company_ui.cards.values():
+				for field in ["body","forecast","payback","timing"]:
+					var label: Label=row[field]
+					check(label.get_theme_font_size("font_size")*g.scale.x>=14,"Safe area shrank body text below14")
+				check(row["buy"].get_theme_font_size("font_size")*g.scale.x>=14,"Safe area shrank price below14")
+				check(row["buy"].size.x>=370,"Price button not full width")
+				check("eksik" in row["buy"].text,"Unaffordable price missing shortfall")
 			var active: StyleBoxFlat=g.company_ui.nav[0].get_theme_stylebox("normal")
 			check(active.border_width_top==4 and g.company_ui.nav_markers[0].visible,"Active fleet highlight missing")
 			check(g.company_ui.sheet_scroll.position.y+g.company_ui.sheet_scroll.size.y<=g.company_ui.sheet.size.y,"Scroll overlaps drawer bottom")

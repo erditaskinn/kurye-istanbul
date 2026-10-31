@@ -46,7 +46,7 @@ func layout() -> void:
 	if frame==null:return
 	frame.position=Vector2(roundf((game.size.x-frame.size.x)/2),game.MAP_TOP+12)
 func allowed() -> bool:
-	return game.has_started and not game.application_suspended and not game.menu_overlay.visible and not game.settings_overlay.visible and not game.return_overlay.visible and not game.company_ui.creation.visible and not game.reset_dialog.visible and not game.rebirth_dialog.visible and not game.migration_dialog.visible and not game.district_panel.visible and not game.album_panel.visible
+	return game.has_started and not game.application_suspended and not game.menu_overlay.visible and not game.settings_overlay.visible and not game.return_overlay.visible and not game.company_ui.creation.visible and not game.company_ui.district_tip.visible and not game.reset_dialog.visible and not game.rebirth_dialog.visible and not game.migration_dialog.visible and not game.district_panel.visible and not game.album_panel.visible
 func clear(stop_audio: bool = true) -> void:
 	pending_cash=0;pending_deliveries=0;purchase_batch=0
 	delivery_cooldown=0;priority_clock=0;age=0;last_kind=""

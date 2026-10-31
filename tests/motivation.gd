@@ -23,7 +23,7 @@ func run() -> void:
 	check(g.motivation_stars == 30 and g.motivation_level == 0, "Failed save consumed stars")
 	g.save_store = store; cash = g.money
 	g._buy_motivation()
-	check(g.motivation_stars == 20 and g.motivation_level == 1 and g.money == cash, "Wrong upgrade currency")
+	check(g.motivation_stars == 27 and g.motivation_level == 1 and g.money == cash, "Wrong upgrade currency")
 	check(g.dispatch.active[0] == accepted, "Accepted job repriced")
 	check(int(g._order_quote(1,2)["paid"]) == int(round(float(quote["payout"]) * g.Economy.service_multiplier(g.service_level) * g._income_multiplier())), "Actual payout differs from multiplier")
 	check(g._order_quote(1,2)["paid"] > quote["paid"], "Permanent bonus ineffective")

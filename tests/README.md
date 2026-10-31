@@ -1,3 +1,13 @@
+# Güncel kabul kapısı — 0.31
+
+`tools/test_company.ps1`15 test grubu çalıştırır. Son0.31 koşusunda15 grup geçti; bu tekil assertion sayısı değildir. Her grup geçici APPDATA kullanır; Godot yolu `-GodotPath` ile verilebilir. SCRIPT ERROR/ERROR ve çıkış kodu birlikte değerlendirilir.
+
+Yeni phone_polish.gd: input sonrasında sekme geçişi, hazır ödül sırası, kaydırmayı yakalamayan çubuklar, satın almayan karşılaştırma, ilk3 yıldız/sonraki15 yıldız motivasyonu ve sınırlı portre boyutu. mobile_polish ve playtest_fixes de güncel kapıdadır. Tam liste çalıştırıcıdadır.
+
+Aşağıdaki0.26/R6 tabloları tarihseldir; eski betik sayısı ve10 yıldız ilk motivasyon maliyeti bugün geçerli değildir. Arşiv ve yerel fixture uyarıları geçerlidir.
+
+---
+
 ## 0.26 güncel ek
 
 Güncel kabul kapısı tools/test_company.ps1 ile12betiktir. progression.gd tek-seferlik atomik başarım ödülleri, restart/prestige/reset, eski şema göçü, offline yıldız/lifetime sayaçları, iki oranlı motivasyon/başarım kartları ve uzmanlık modal gezinmesini ekler. specialization.gd yeni35/35/40rol katsayılarını, motivation.gd yeni10yıldız başlangıç maliyetini kullanır. Eski tablo ve katsayı notları tarihsel olabilir.
